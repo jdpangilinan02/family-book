@@ -183,7 +183,38 @@ Every mutation to Person, ParentChild, or Partnership is logged.
 | new_value | JSON | no | null | | Snapshot after change |
 | created_at | datetime | yes | now() | | |
 
-### GedcomImportBatch (Phase 2 — specced now, built later)
+### Moment
+
+The beating heart of Family Book. A reverse-chronological feed of family life.
+
+| Field | Type | Required | Default | Constraints | Notes |
+|-------|------|----------|---------|-------------|-------|
+| id | UUID | yes | auto | PK | |
+| person_id | UUID | yes | — | FK → Person.id | Who this Moment is about (or who posted it) |
+| kind | enum | yes | — | photo, video, text, milestone, memorial | |
+| title | str | no | null | max 300 | Optional headline: "First steps!", "Graduation day" |
+| body | str | no | null | max 5000 | Caption, description, or milestone text |
+| media_ids | JSON | no | [] | Array of Photo.id UUIDs | Photos/videos attached to this Moment |
+| milestone_type | enum | no | null | birth, first_steps, first_words, first_day_school, graduation, engagement, marriage, divorce, new_home, travel, death, birthday, anniversary, custom | Only for kind=milestone |
+| occurred_at | datetime | yes | now() | | When the Moment happened (may be backdated for imports) |
+| occurred_precision | enum | no | exact | exact, day, month, year | For imported/historical Moments |
+| source | enum | yes | manual | manual, whatsapp_import, facebook_import, instagram_import, auto_generated | |
+| visibility | enum | yes | members | members, admins, hidden | Who can see this Moment |
+| posted_by | UUID | no | null | FK → Person.id | Who uploaded/created it |
+| created_at | datetime | yes | now() | | |
+
+**Auto-generated Moments:**
+- Birthday: created by cron, `kind=milestone`, `milestone_type=birthday`, `source=auto_generated`
+- Anniversary: same pattern, computed from Partnership.start_date
+- Memorial date: annual reminder on death_date
+
+**WhatsApp-imported Moments:**
+- `kind=photo` or `kind=video`, `source=whatsapp_import`
+- `occurred_at` = original WhatsApp message timestamp
+- `person_id` = the sender (as mapped by admin)
+- `body` = message text that accompanied the photo (if any)
+
+### GedcomImportBatch (specced now, built later)
 
 | Field | Type | Required | Default | Constraints | Notes |
 |-------|------|----------|---------|-------------|-------|
@@ -656,7 +687,112 @@ Re-importing the same GEDCOM file creates a new batch but auto-matches staged re
 
 ---
 
-## WhatsApp Profile Sync (Phase 3)
+## WhatsApp Group Export Ingestion (Bootstrap — Critical Path)
+
+This is how the family gets into Family Book. Not manual JSON seed files. Not one-by-one admin entry. The family WhatsApp group IS the family database — it just needs to be imported.
+
+### How It Works
+
+1. Tyler opens the family WhatsApp group → Settings → Export Chat → **"Include Media"**
+2. WhatsApp produces a `.zip` containing:
+   - `_chat.txt` — full message history with timestamps and sender names
+   - Media files: `IMG-20260315-WA0001.jpg`, `VID-...mp4`, `PTT-...opus`, etc.
+3. Tyler uploads the `.zip` to Family Book admin panel (`/admin/import/whatsapp`)
+4. Parser extracts:
+   - **Unique contact names** → candidate Person records
+   - **Photos with timestamps** → candidate Moments + Photo records
+   - **Videos** → candidate Moments (stored as media)
+   - **System messages** → group membership history ("X added Y", "X left")
+5. Admin mapping UI: Tyler sees a list of extracted contact names and matches each to a Person record (existing or new)
+6. After mapping, photos/videos are assigned to the correct Person and become Moments
+7. Historical photos are backdated to their original WhatsApp timestamps
+
+### WhatsApp Export Format
+
+The chat text file format varies by OS and locale:
+
+```
+# iOS format:
+[DD/MM/YYYY, HH:MM:SS] Contact Name: message text
+[DD/MM/YYYY, HH:MM:SS] Contact Name: <attached: IMG-20260315-WA0001.jpg>
+
+# Android format:
+MM/DD/YY, HH:MM - Contact Name: message text
+MM/DD/YY, HH:MM - Contact Name: IMG-20260315-WA0001.jpg (file attached)
+
+# System messages:
+[DD/MM/YYYY, HH:MM:SS] Contact Name added Contact Name2
+[DD/MM/YYYY, HH:MM:SS] Contact Name left
+[DD/MM/YYYY, HH:MM:SS] Contact Name changed the group description
+```
+
+### Parser Requirements
+
+| Field | Source | Notes |
+|-------|--------|-------|
+| Contact names | Message sender field | Unique set = candidate person list |
+| Photos | .jpg/.jpeg/.png files in zip | Matched to sender by filename reference in chat text |
+| Videos | .mp4 files in zip | Same matching as photos |
+| Timestamps | Message timestamp | Original date/time for backdating Moments |
+| Message text | Message body | Optional: import as Moment captions or discard (admin choice) |
+
+### Limitations
+
+- **No phone numbers in export.** Contact names only. Tyler must manually map names to people.
+- **Media limit:** WhatsApp exports ~10,000 most recent messages with media, ~40,000 without. For large groups with years of history, multiple exports may be needed (or use the GDPR account data export for full history).
+- **Date format varies** by device locale. Parser must handle both DD/MM/YYYY and MM/DD/YY formats.
+- **Duplicate media:** Same photo may appear in multiple exports. Dedup by file hash (SHA-256).
+- **Voice notes (.opus):** Import but flag as audio, not photo/video. Optional playback in Moments.
+
+### Admin Mapping UI
+
+After upload, the admin sees:
+
+```
+WhatsApp Import: "Martin Family Group" — 847 messages, 312 photos, 23 videos
+
+Contact Name Mapping:
+┌─────────────────────┬──────────────────────────────┬──────────┐
+│ WhatsApp Name        │ Match To                     │ Status   │
+├─────────────────────┼──────────────────────────────┼──────────┤
+│ Tyler                │ [Tyler Martin ▾] (auto)      │ ✅ Mapped │
+│ Yuliya               │ [Yuliya Martin ▾] (auto)     │ ✅ Mapped │
+│ Мама                 │ [Create new person ▾]        │ ⚠️ New    │
+│ Shelley              │ [Shelley Martin ▾] (auto)    │ ✅ Mapped │
+│ Dmitri               │ [Create new person ▾]        │ ⚠️ New    │
+│ +7 912 345 6789      │ [Search... ▾]                │ ❌ Unmatched│
+└─────────────────────┴──────────────────────────────┴──────────┘
+
+[Import 312 photos + 23 videos as Moments] [Preview first] [Cancel]
+```
+
+Auto-matching: fuzzy match WhatsApp contact names against existing Person.first_name + Person.nickname. Exact match → auto-mapped. Fuzzy match → suggested with confidence score. No match → "Create new person" with pre-filled name.
+
+### Data Flow
+
+```
+WhatsApp .zip
+    │
+    ▼
+Parse _chat.txt → extract unique senders + message-media mapping
+    │
+    ▼
+Extract media files → dedup by SHA-256 hash
+    │
+    ▼
+Admin mapping UI → match senders to Person records
+    │
+    ▼
+Create new Person records for unmapped senders
+    │
+    ▼
+Import photos/videos → Photo records + Moment records (backdated)
+    │
+    ▼
+Family Book is pre-populated with years of family photos on day one
+```
+
+## WhatsApp Profile Sync (optional, via wacli)
 
 - Weekly cron via `wacli`
 - Pull profile photos for contacts matching Person records (by phone number)
@@ -923,67 +1059,82 @@ Tyler and Yuliya populate the initial family tree as a JSON seed file: `data/fam
 
 ---
 
-## Phase Plan (revised)
+## Phase Plan (no phases — features, not phases)
 
-### Phase 1 — MVP (target: 1-2 weeks)
+Stop thinking in phases. Every feature below is part of the complete product vision. Build order is determined by dependency graph, not arbitrary phase numbers. The spec describes the full product. The build agent decides implementation order based on what depends on what.
+
+### Foundation (must exist before anything else)
 - [ ] Repo setup + CLAUDE.md + .env.example
-- [ ] SQLite data model (Person, ParentChild, Partnership, UserSession, AuditLog, Photo)
+- [ ] SQLite data model (Person, ParentChild, Partnership, UserSession, AuditLog, Photo, Moment)
 - [ ] Alembic migrations
-- [ ] Invite link auth (create invite, claim invite, session)
-- [ ] Magic link email auth (send link, claim link, session)
+- [ ] Health endpoint
+- [ ] Dockerfile + Railway deploy with persistent volume
+- [ ] Automated daily backup + admin backup/download UI
+
+### Bootstrap (how the family gets in)
+- [ ] WhatsApp group export ingestion (THE primary bootstrap — see WhatsApp Ingestion section)
+- [ ] Admin name-to-person mapping UI (match WhatsApp contact names to Person records)
 - [ ] Admin CRUD: create/edit/delete persons
 - [ ] Admin: create/edit relationships (parent-child + partnerships)
-- [ ] Admin: manage invites
-- [ ] Admin: approval queue (if REQUIRE_APPROVAL=true)
-- [ ] Tree visualization (D3, single page, pan/zoom, tap for card)
+- [ ] Seed data loader (JSON → DB, for manual override/supplement)
+- [ ] Invite link auth (create invite, claim invite, session)
+- [ ] Magic link email auth (send link, claim link, session)
+- [ ] Admin: manage invites + approval queue
+
+### The Living Room (what family members see)
+- [ ] Tree visualization (D3, pan/zoom, tap for card, mobile-friendly)
 - [ ] Person cards (HTMX slide-out panel)
 - [ ] Person list view with search + branch/country filters
 - [ ] Photo upload + auth-gated serving
-- [ ] Seed data loader (JSON → DB)
-- [ ] Automated daily backup
-- [ ] Admin backup/download UI
-- [ ] Health endpoint
-- [ ] Dockerfile + Railway deploy
+- [ ] Moments feed (reverse-chronological, photos/videos/milestones)
+- [ ] Moments posting (photo/video upload from mobile)
+- [ ] Auto-generated milestone Moments (birthdays, anniversaries)
+- [ ] Memorial mode for deceased persons
 - [ ] Mobile-first responsive design
 
-### Phase 1.5 — Hardening (1 week)
-- [ ] Duplicate detection on person creation
-- [ ] Merge UI (side-by-side, admin picks winner)
-- [ ] Per-field visibility enforcement
-- [ ] Audit log viewer in admin panel
-- [ ] Rate limiting
-- [ ] Restore procedure test + documentation
+### Notifications (how the family stays connected)
+- [ ] SMS/MMS notifications via Twilio (birthday reminders, milestone alerts, weekly digest)
+- [ ] MMS photo delivery for key moments
+- [ ] Email notifications (weekly digest with embedded photos, milestone alerts)
+- [ ] Email ingestion via Envelope (forward photos → Moments)
 
-### Phase 2 — Enrichment (1-2 weeks)
+### Data Liberation (import everything)
+- [ ] Facebook data export ingestion (photos, profile, staged for review)
+- [ ] Instagram data export ingestion
+- [ ] WhatsApp chat export ingestion (historical photo recovery from ALL family chats)
+- [ ] GEDCOM import pipeline (stage → review → accept/merge/reject)
 - [ ] Facebook OAuth as optional profile enrichment
-- [ ] i18n: en, ru, es static catalogs
-- [ ] Relationship term computation (with gendered Russian labels)
+- [ ] TikTok/Instagram oEmbed in Moments
+
+### Enrichment
+- [ ] i18n: en, ru, es static catalogs + gendered Russian relationship terms
 - [ ] Birthday calendar
 - [ ] World map (Leaflet + OpenStreetMap)
-- [ ] GEDCOM import pipeline (stage → review → accept)
-- [ ] Graph-distance privacy engine
+- [ ] Duplicate detection + merge UI
+- [ ] Audit log viewer in admin panel
+- [ ] Rate limiting
+- [ ] Graph-distance privacy engine + life-event mutations
 
-### Phase 3 — Import & Sync
-- [ ] Facebook data export email ingestion via Envelope
-- [ ] WhatsApp profile photo sync via wacli
-- [ ] `user_friends` + `user_photos` (requires Facebook App Review)
+### Optional Channels
+- [ ] Telegram bot (notifications + photo upload for power users)
+- [ ] Signal bridge via OpenClaw
 
-### Phase 4 — Federation (if ever)
-- [ ] Federation API
-- [ ] Cross-instance graph linking
-- [ ] ActivityPub / GoToSocial (optional)
+### Long-term
+- [ ] Federation API (cross-instance family linking)
+- [ ] ActivityPub / GoToSocial
 
 ---
 
 ## Human-Only Bottlenecks
 
-1. **Tyler + Yuliya:** Populate `data/family_tree.json` seed file (one evening)
-2. **Tyler:** Register Facebook Developer App (~30 min, only if enabling Facebook)
-3. **Tyler:** Generate pre-stable UUIDs for seed file
+1. **Tyler:** Export the family WhatsApp group chat with media (~2 minutes)
+2. **Tyler + Yuliya:** Map WhatsApp contact names to real family members in admin UI (~30 min)
+3. **Tyler + Yuliya:** Add relationship edges (parent-child, partnerships) for mapped people (~1 evening)
 4. **Tyler:** Decide domain (martin.fm or other)
 5. **Tyler:** Configure SMTP or Envelope for magic link emails
-6. **Tyler + Yuliya:** Send invite links to family via WhatsApp/Telegram
-7. **Tyler:** Curate Russian relationship terms with Yuliya (for Phase 2 i18n)
+6. **Tyler + Yuliya:** Send invite links to family
+7. **Tyler:** Register Facebook Developer App (~30 min, only if enabling Facebook)
+8. **Tyler + Yuliya:** Curate Russian relationship terms (for i18n)
 
 ---
 
