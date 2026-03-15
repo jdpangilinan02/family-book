@@ -1254,7 +1254,62 @@ Re-importing the same GEDCOM file creates a new batch but auto-matches staged re
 
 ---
 
-## Facebook Integration (Phase 2 — optional enrichment)
+## Facebook Groups & Messenger Integration
+
+Many families have an existing Facebook Group or Messenger group chat. These are ingestion sources — content flows FROM them INTO Family Book.
+
+### Facebook Group
+
+| Capability | How | Automation |
+|-----------|-----|------------|
+| **Historical posts + photos** | Facebook data export (group member requests export → .zip with posts, photos, comments) | Semi-auto: member requests, Envelope ingests the download email |
+| **Ongoing monitoring** | mautrix-meta bridge (via Matrix) | Auto: bridge mirrors group activity to Matrix → Family Book ingests |
+| **Profile photos** | Facebook OAuth (public_profile scope) | Auto: on OAuth link |
+| **Family relationships** | Facebook data export → `about_you/family_members.json` | Semi-auto: often empty/unreliable but worth parsing when present |
+
+**Facebook Group as bridge (same model as WhatsApp):**
+- The Facebook Group continues to exist. Family Book doesn't replace it.
+- For family members who ONLY use Facebook, the Group is their posting surface.
+- mautrix-meta bridges the group into Matrix → Family Book captures everything.
+- Family members who don't use Facebook never need to — they see content via their preferred channel.
+
+### Facebook Messenger Group Chat
+
+Some families use Messenger group chats instead of (or alongside) WhatsApp groups.
+
+| Capability | How | Automation |
+|-----------|-----|------------|
+| **Historical messages + photos** | Facebook data export → `messages/inbox/GroupName/` folder with `message_1.json` + media files | Semi-auto: member requests export |
+| **Ongoing monitoring** | mautrix-meta bridge | Auto: real-time bridge to Matrix |
+| **Reactions** | mautrix-meta supports reaction bridging | Auto: Messenger reactions → Matrix → Family Book |
+
+**Messenger export format:**
+```json
+{
+  "participants": [{"name": "Tyler Martin"}, {"name": "Yuliya Martin"}],
+  "messages": [
+    {
+      "sender_name": "Tyler Martin",
+      "timestamp_ms": 1710500000000,
+      "content": "Look at this photo!",
+      "photos": [{"uri": "messages/inbox/Family/photos/42.jpg", "creation_timestamp": 1710500000}],
+      "type": "Generic"
+    }
+  ]
+}
+```
+
+**Parser requirements (same pipeline as WhatsApp):**
+1. Parse `message_*.json` files from export
+2. Extract sender names → match to Person records (same admin mapping UI as WhatsApp)
+3. Extract photos/videos → create Photo records + Moments (backdated to original timestamps)
+4. Map Messenger reactions to MomentReactions
+5. Dedup by file hash across multiple exports
+6. Handle Messenger-specific message types: stickers (import as image), GIFs (import as video), audio messages (import as audio Moment), links (import as text Moment)
+
+---
+
+## Facebook OAuth (optional enrichment)
 
 ### What Facebook Provides (Development Mode, no App Review)
 
