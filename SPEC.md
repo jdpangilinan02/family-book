@@ -953,6 +953,149 @@ Grandparents aren't just consumers — they're co-organizers and privacy guardia
 
 **Implementation:** New role `branch_admin` with scope limited to Person records within their branch. Not full admin — can't delete people, can't change tree structure outside their branch, can't access system settings. But within their branch, they have meaningful authority.
 
+### Memorial Mode
+
+When someone dies, their profile transforms into a living tribute. This is the most emotionally important feature in the entire app.
+
+**Two layers: the person's own voice (D) + the family's memories (C).**
+
+#### Pre-Planning (while alive)
+
+Any family member can pre-plan their own memorial at any time. This isn't morbid — it's an act of love. You choose how you want to be remembered.
+
+**Pre-plan settings** (accessible from profile → "My Memorial"):
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `memorial_photo` | The photo that leads the memorial page | Current profile photo |
+| `memorial_photos` | Curated gallery — pick your favorites from your Moments | Auto: all photos |
+| `memorial_bio` | Your words. Your story. Written by you. | Falls back to regular bio |
+| `memorial_message` | A message to your family, revealed after death | null |
+| `memorial_music` | A song or playlist link (Spotify, YouTube) | null |
+| `memorial_wishes` | What do you want shared? What stays private? | "Share everything" |
+| `memorial_contact_visible` | Should contact info remain visible after death? | false |
+
+**The pre-plan is private until death.** Nobody sees it — not even admin — until the person is marked as deceased. Then it becomes the foundation of the memorial page.
+
+#### When Someone Dies
+
+**Step 1: Mark as deceased (admin or immediate family)**
+- Admin or any immediate family member (spouse, children, parents) marks the person as deceased
+- Sets `death_date` and `is_living = false`
+- If the person has a pre-plan → it activates immediately
+- If no pre-plan → a default memorial is generated from their profile + photos
+
+**Step 2: Immediate changes**
+- Profile transforms to memorial layout (see below)
+- Contact info hidden (unless pre-plan says otherwise)
+- Profile photo gets a subtle memorial treatment (gentle desaturation or thin memorial border — NOT a tacky filter)
+- A memorial Moment is auto-generated in the feed: "In loving memory of [name]. [dates]." with their memorial photo
+- Push notification to all family members via their preferred channel
+
+**Step 3: The memorial grows (gradual, ongoing)**
+- Family members can add **Tributes** to the memorial: a photo + a memory/story
+- Tributes appear in a dedicated section of the memorial page
+- No time limit — you can add a tribute 10 years later when a memory surfaces
+- The memorial becomes richer over time, like a digital headstone that the family tends
+
+#### Memorial Page Layout
+
+```
+┌──────────────────────────────────────────┐
+│                                          │
+│     [Memorial Photo — large, centered]   │
+│                                          │
+│     Дедушка Борис Петрович               │
+│     1938 — 2024                          │
+│     Москва, Россия                       │
+│                                          │
+│  ─────────────────────────────────────── │
+│                                          │
+│  "В моей жизни было много счастья..."    │  ← memorial_bio (their words)
+│                                          │
+│  ─────────────────────────────────────── │
+│                                          │
+│  💌 A message from Дедушка:              │  ← memorial_message (revealed after death)
+│  "Не грустите. Я прожил хорошую жизнь.  │
+│   Берегите друг друга."                  │
+│                                          │
+│  ─────────────────────────────────────── │
+│                                          │
+│  📸 Photo Gallery                        │  ← curated by them + all their Moments
+│  [photo] [photo] [photo] [photo]         │
+│  [photo] [photo] [+24 more]             │
+│                                          │
+│  ─────────────────────────────────────── │
+│                                          │
+│  🕊️ Tributes from Family                 │
+│                                          │
+│  ┌────────────────────────────────────┐  │
+│  │ Tyler Martin — March 15, 2025     │  │
+│  │ "He taught me to play chess when  │  │
+│  │ I was 6. I never beat him. I      │  │
+│  │ think he let me get close once."  │  │
+│  │ [photo of them playing chess]     │  │
+│  └────────────────────────────────────┘  │
+│                                          │
+│  ┌────────────────────────────────────┐  │
+│  │ Yuliya Martin — March 20, 2025    │  │
+│  │ "Папа, я скучаю по твоим         │  │
+│  │ пельменям и твоим шуткам."       │  │
+│  └────────────────────────────────────┘  │
+│                                          │
+│  [Add a tribute...]                      │
+│                                          │
+│  ─────────────────────────────────────── │
+│                                          │
+│  🌳 Family Tree                          │
+│  Parents: ... | Spouse: ... | Children:  │
+│                                          │
+│  ─────────────────────────────────────── │
+│                                          │
+│  📅 Life Timeline                        │
+│  • 1938 — Born in Москва                 │
+│  • 1960 — Married Наталья               │
+│  • 1965 — Дочь Юлия родилась            │
+│  • 2020 — Внучка родилась               │
+│  • 2024 — 🕊️                            │
+│                                          │
+└──────────────────────────────────────────┘
+```
+
+#### Tribute Entity
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| id | UUID | yes | PK |
+| memorial_person_id | UUID | yes | FK → Person.id (the deceased) |
+| author_id | UUID | yes | FK → Person.id (who wrote the tribute) |
+| body | str | yes | Max 5000 chars. The memory/story. |
+| photo_id | UUID | no | FK → Photo.id (optional photo with the tribute) |
+| created_at | datetime | yes | |
+
+#### Annual Remembrance
+
+- On the anniversary of death_date, auto-generate a Moment: "Remembering [name]. [X] years. 🕊️" with their memorial photo
+- Push notification to immediate family only (not the whole extended family)
+- Gentle, not intrusive. A quiet reminder, not a Facebook "memories" dopamine hit.
+
+#### Memorial in the Tree
+
+- Memorial persons show in the tree with a subtle visual distinction:
+  - Slightly faded node (reduced opacity, not greyed out)
+  - Small 🕊️ icon beside their name
+  - Tap → goes to memorial page instead of regular profile
+- Memorial persons are NEVER hidden from the tree. They are part of the family forever.
+
+#### Design Principles for Memorial
+
+1. **Reverence over engagement.** No reaction counts on memorial Moments. No "12 people liked this." Death is not content.
+2. **Their voice first.** If they pre-planned, their words lead. Family memories come second.
+3. **No surprise reveals.** The memorial_message is clearly marked as "a message from [name]" — not a jump scare.
+4. **Multilingual.** Memorial bios and messages in whatever language the person wrote them. No auto-translation.
+5. **Permanent.** Memorials cannot be deleted by anyone except admin. Tributes can be hidden but not deleted.
+6. **Quiet notifications.** Annual remembrance goes to immediate family only. No push to distant cousins.
+
 ### Family Governance (Lightweight Consent Model)
 
 Not everything needs a vote. Most actions are individual. But decisions about others require consent from the people affected. Graph distance determines who has standing.
