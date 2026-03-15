@@ -468,18 +468,19 @@ No SPA framework. No React. No Vue. Vanilla HTML + HTMX + one D3 island.
 
 | Route | Auth | Renders | Method |
 |-------|------|---------|--------|
-| `/` | none | Landing page — "Family Book" + login options | Server |
+| `/` | member → Moments feed; anonymous → landing page | Moments feed (logged in) or "Family Book" + login (anonymous) | Server + HTMX |
 | `/invite/{token}` | none | Claim page — "Welcome, [name]! Confirm to join." | Server |
 | `/login` | none | Login form — magic link email + Facebook option | Server |
 | `/tree` | member | Full-page D3 tree visualization | Server shell + D3 client |
 | `/people` | member | List view — searchable, filterable by branch/country | Server + HTMX |
-| `/people/{id}` | member | Person detail card — photo, bio, relationships, contact | Server + HTMX |
+| `/people/{id}` | member | Person detail — bio, relationships, contact, Moments by this person | Server + HTMX |
 | `/profile` | member | Own profile edit form | Server + HTMX |
 | `/admin` | admin | Dashboard — pending approvals, recent audit log, invite links | Server + HTMX |
 | `/admin/people/new` | admin | Create person form | Server + HTMX |
 | `/admin/people/{id}/edit` | admin | Edit person form | Server + HTMX |
 | `/admin/relationships` | admin | Relationship manager — add/edit parent-child + partnerships | Server + HTMX |
 | `/admin/backup` | admin | Backup/export controls | Server + HTMX |
+| `/admin/import/whatsapp` | admin | WhatsApp group export upload + name mapping | Server + HTMX |
 
 ### Tree Visualization (D3)
 
@@ -519,6 +520,178 @@ Loaded via HTMX into a slide-out panel or modal:
 - Contact buttons (WhatsApp, Telegram, Signal, Email — only if value exists)
 - Photo gallery thumbnails (if any)
 - "View full profile" link
+
+### Moments Feed (the main screen)
+
+The Moments feed is what most family members see most of the time. It's the living room. The tree is the family portrait on the wall — you glance at it. The feed is the conversation happening in the room.
+
+**Route:** `/` (for logged-in members — the landing page redirects to login for anonymous visitors)
+
+**Layout:** Single-column, reverse-chronological, infinite scroll. Think Instagram's feed stripped of ads, algorithms, and strangers.
+
+```
+┌─────────────────────────────────┐
+│  🏠 Family Book    🌳 👥 ⚙️    │  ← nav: home (feed), tree, people, settings
+├─────────────────────────────────┤
+│  [+ New Moment]                 │  ← floating action button (mobile: bottom-right)
+├─────────────────────────────────┤
+│  ┌─────────────────────────────┐│
+│  │ 📷  Tyler Martin            ││  ← poster's photo + name
+│  │     2 hours ago · Madrid    ││  ← relative time + location
+│  │                             ││
+│  │  [═══════════════════════]  ││  ← photo (full-width, aspect-ratio preserved)
+│  │  [═══════════════════════]  ││
+│  │  [═══════════════════════]  ││
+│  │                             ││
+│  │  "First time on skis! ⛷️"   ││  ← caption
+│  │                             ││
+│  │  ❤️ 4   💬 2               ││  ← reactions + comment count
+│  └─────────────────────────────┘│
+│                                 │
+│  ┌─────────────────────────────┐│
+│  │ 🎂  Auto-generated          ││
+│  │     Today                   ││
+│  │                             ││
+│  │  "Happy birthday Дядя Саша! ││
+│  │   🎂 He turns 58 today."   ││
+│  │                             ││
+│  │  [📷 Дядя Саша's photo]    ││  ← profile photo as hero image
+│  │                             ││
+│  │  ❤️ 7                      ││
+│  └─────────────────────────────┘│
+│                                 │
+│  ┌─────────────────────────────┐│
+│  │ 📷  Yuliya Martin           ││
+│  │     Yesterday · Madrid      ││
+│  │                             ││
+│  │  [photo] [photo] [photo]    ││  ← multi-photo: horizontal scroll or grid
+│  │                             ││
+│  │  "Пельмени с бабушкой! 🥟"  ││
+│  │                             ││
+│  │  ❤️ 12  💬 5               ││
+│  └─────────────────────────────┘│
+└─────────────────────────────────┘
+```
+
+**Moment Card Anatomy:**
+
+| Element | Source | Notes |
+|---------|--------|-------|
+| Poster avatar | Person.photo_url (circle, 40px) | Tap → person card |
+| Poster name | Person display name | Tap → person profile |
+| Timestamp | Moment.occurred_at | Relative: "2 hours ago", "Yesterday", "March 10". Tap → absolute datetime. |
+| Location | Inferred from poster's residence or manually set | Optional. Only shown if present. |
+| Media | Photo(s) / Video | Full-width. Single photo: fill card. Multi-photo (2-4): grid. 5+: grid with "+N more" overlay. Video: inline player with poster frame. |
+| Caption | Moment.body | Max 3 lines visible, "more…" expands. Supports emoji. No markdown. |
+| Milestone badge | Moment.milestone_type | 🎂 birthday, 💒 wedding, 🎓 graduation, 👶 new baby, 🕊️ memorial, ✈️ travel. Shown as icon + colored banner. |
+| Reactions | MomentReaction records | Emoji row: ❤️ 4, 😂 2, etc. Tap to add/remove. |
+| Comment count | Count of MomentComment | Tap → expands comment thread inline (HTMX load) |
+
+**Posting a New Moment:**
+
+1. Tap [+ New Moment] button (FAB on mobile, top bar on desktop)
+2. Modal/sheet slides up:
+   - Photo/video picker (multi-select, max 10)
+   - Caption text field (max 5000 chars)
+   - "Who is this about?" — optional person tag (autocomplete from family members)
+   - "When?" — defaults to now, can backdate
+   - Post button
+3. Upload photos → create Photo records → create Moment record → appears at top of feed
+4. HTMX: new Moment prepended to feed without page reload
+
+**Infinite Scroll:**
+- Initial load: 20 Moments
+- Scroll to bottom → HTMX `hx-get="/api/moments?before={oldest_id}"` appends next 20
+- End of feed: "You've reached the beginning! 📖"
+
+**Filtering:**
+- Default: all Moments from all family members
+- Filter by person: `/moments?person={id}` (also accessible from person profile)
+- Filter by branch: `/moments?branch=martin`
+- Filter by type: `/moments?kind=milestone` (milestones only)
+- Filter by year: `/moments?year=2024`
+- Filters available via dropdown in nav bar, NOT a separate page
+
+### Moment Reactions
+
+Simple emoji reactions, not likes. Family members tap to react.
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| id | UUID | yes | PK |
+| moment_id | UUID | yes | FK → Moment.id |
+| person_id | UUID | yes | FK → Person.id (who reacted) |
+| emoji | str | yes | Single emoji: ❤️ 😂 😢 🎉 🙏 😮 max 1 reaction per person per moment |
+| created_at | datetime | yes | |
+
+**Constraints:** Unique on (moment_id, person_id). One reaction per person per Moment. Changing reaction replaces the old one.
+
+**UI:** Below each Moment card, show aggregated emoji counts. Tap an emoji to toggle your own reaction. Long-press (mobile) or hover (desktop) to pick a different emoji from a small palette: ❤️ 😂 😢 🎉 🙏 😮
+
+### Moment Comments
+
+Lightweight threaded comments on Moments.
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| id | UUID | yes | PK |
+| moment_id | UUID | yes | FK → Moment.id |
+| person_id | UUID | yes | FK → Person.id (who commented) |
+| body | str | yes | Max 2000 chars. Plain text + emoji. No markdown. |
+| created_at | datetime | yes | |
+
+**UI:**
+- Comment count shown on Moment card. Tap → expands inline comment thread (HTMX).
+- Comments show: avatar (24px) + name + text + relative timestamp
+- "Add a comment…" text field at bottom of thread
+- Submit via Enter or tap send button
+- New comments appear instantly (HTMX swap, no page reload)
+- No nested replies. Flat thread. This is family, not Reddit.
+- Admin can delete any comment. Members can delete their own.
+
+### Moments API Endpoints
+
+| Method | Path | Auth | Request | Success | Errors |
+|--------|------|------|---------|---------|--------|
+| GET | `/api/moments` | member | `?before=uuid&limit=20&person=uuid&branch=str&kind=str&year=int` | 200: `[MomentCard]` | 401 |
+| POST | `/api/moments` | member | multipart: photos + `{ body?, person_id?, occurred_at?, kind }` | 201: `MomentCard` | 400, 401, 413 |
+| DELETE | `/api/moments/{id}` | admin or poster | — | 204 | 401, 403, 404 |
+| POST | `/api/moments/{id}/reactions` | member | `{ emoji }` | 200: `{ emoji, count }` | 400, 401, 404 |
+| DELETE | `/api/moments/{id}/reactions` | member | — | 204 | 401, 404 |
+| GET | `/api/moments/{id}/comments` | member | `?limit=50` | 200: `[Comment]` | 401, 404 |
+| POST | `/api/moments/{id}/comments` | member | `{ body }` | 201: `Comment` | 400, 401, 404 |
+| DELETE | `/api/comments/{id}` | admin or author | — | 204 | 401, 403, 404 |
+
+**MomentCard response:**
+```json
+{
+  "id": "uuid",
+  "kind": "photo",
+  "poster": { "id": "uuid", "display_name": "Tyler Martin", "photo_url": "/photos/..." },
+  "about": { "id": "uuid", "display_name": "Luna" },
+  "body": "First time on skis! ⛷️",
+  "media": [{ "id": "uuid", "url": "/photos/uuid/ski.jpg", "width": 1200, "height": 900 }],
+  "milestone_type": null,
+  "occurred_at": "2026-03-15T09:30:00Z",
+  "reactions": { "❤️": 4, "😂": 2 },
+  "my_reaction": "❤️",
+  "comment_count": 3,
+  "created_at": "2026-03-15T09:35:00Z"
+}
+```
+
+### Navigation (revised with Moments as home)
+
+| Icon | Route | Label |
+|------|-------|-------|
+| 🏠 | `/` | Home (Moments feed) |
+| 🌳 | `/tree` | Tree |
+| 👥 | `/people` | People |
+| ⚙️ | `/profile` (member) or `/admin` (admin) | Settings / Admin |
+
+Mobile: bottom tab bar (4 icons). Desktop: top nav bar.
+
+**The Moments feed is the default logged-in view.** Not the tree. The tree is one tap away but the feed is where life happens. Бабушка opens the app and sees yesterday's photos of her granddaughter. That's the first thing. Always.
 
 ### Design System
 
