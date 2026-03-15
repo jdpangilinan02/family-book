@@ -1138,6 +1138,86 @@ Stop thinking in phases. Every feature below is part of the complete product vis
 
 ---
 
+## Family Graph API (Agent Context Layer)
+
+The family graph isn't just for humans browsing a tree. It's a **sovereign context layer** that any authorized agent can query to understand a person in the context of their family.
+
+### Use Cases
+
+| Agent | What It Needs | Family Graph Provides |
+|-------|--------------|----------------------|
+| In-home caregiving robot (2030s) | Who lives here? Who visits? Who to call in emergency? | Household members, relationship distance → priority, emergency contacts sorted by closeness |
+| Personal AI assistant | "Remind me about mom's birthday" — which mom? | Unambiguous identity resolution via relationship graph |
+| Smart home | "Let Shelley in" — who is Shelley? Is she authorized? | Family membership + relationship = implicit access control |
+| Estate planning agent | Who are the legal heirs? What's the family structure? | Complete relationship graph with legal relationship types (biological, adoptive, step) |
+| Medical emergency agent | Next of kin? Blood relatives? Allergies in family? | Relationship graph with biological/non-biological distinction |
+| Travel assistant | "Book flights for the family" — which family? | Household composition, ages, nationalities, passport countries |
+| Photo organization AI | Who is in this photo? | Face-to-name mapping + relationship context |
+| Language learning agent | What languages does grandma speak? | Person.languages + relationship path = "learn Russian to talk to бабушка" |
+
+### API Design
+
+Read-only. Scoped by API key permissions. Never exposes data beyond the requesting agent's authorization level.
+
+#### Agent Endpoints
+
+| Method | Path | Auth | Response | Notes |
+|--------|------|------|----------|-------|
+| GET | `/api/agent/person/{id}` | API key | PersonContext | Full person card + relationship labels |
+| GET | `/api/agent/household/{person_id}` | API key | `[PersonSummary]` | People who share a residence with this person |
+| GET | `/api/agent/emergency-contacts/{person_id}` | API key | `[{ person, relationship, phone, priority }]` | Sorted by relationship closeness |
+| GET | `/api/agent/relatives/{person_id}` | API key | `[{ person, relationship_label, distance }]` | All relatives with computed labels |
+| GET | `/api/agent/relatives/{person_id}?max_distance=2` | API key | `[{ person, relationship_label, distance }]` | Immediate family only |
+| GET | `/api/agent/milestones/{person_id}` | API key | `[Milestone]` | Upcoming birthdays, anniversaries, memorial dates |
+| GET | `/api/agent/context/{person_id}` | API key | FamilyContext | Everything an agent needs to understand this person |
+
+#### FamilyContext Response
+
+```json
+{
+  "person": {
+    "id": "uuid",
+    "display_name": "Tyler Martin",
+    "languages": ["en", "es", "de", "fr", "ru"],
+    "residence": { "place": "Madrid, Spain", "country_code": "ES", "timezone": "Europe/Madrid" },
+    "age": 44
+  },
+  "household": [
+    { "name": "Yuliya Martin", "relationship": "wife", "languages": ["ru", "en", "es"] },
+    { "name": "[redacted]", "relationship": "daughter", "age": 4 }
+  ],
+  "emergency_contacts": [
+    { "name": "Yuliya Martin", "relationship": "wife", "phone": "+34...", "priority": 1 },
+    { "name": "Father Martin", "relationship": "father", "phone": "+1...", "priority": 2, "timezone": "America/Vancouver" }
+  ],
+  "upcoming": [
+    { "type": "birthday", "person": "Дядя Саша", "date": "2026-03-22", "days_away": 7 }
+  ],
+  "family_size": 47,
+  "countries": ["ES", "CA", "RU", "US"],
+  "branches": ["martin", "semesock", "maternal"]
+}
+```
+
+### API Key Scoping
+
+| Scope | Access | Use Case |
+|-------|--------|----------|
+| `household` | Own household members only | Smart home, caregiving robot |
+| `immediate` | Distance ≤ 2 (parents, children, siblings, spouse) | Personal assistant |
+| `extended` | Distance ≤ 4 (cousins, aunts/uncles) | Travel planning, event coordination |
+| `full` | Entire graph (admin only) | Estate planning, medical emergency |
+
+API keys are created by admin, scoped per agent, and logged in the audit trail. Revocable at any time.
+
+### The Sovereignty Principle
+
+This API exists so that **agents come to your family graph** — your family graph never goes to them. The data stays in your SQLite. The agent makes authenticated read requests. If the agent's vendor goes bankrupt, changes terms, or gets acquired, you revoke the API key. Your data hasn't moved.
+
+This is the inverse of how every smart assistant works today (you upload your contacts to their cloud). Family Book says: your cloud queries my data, under my terms, with my permission, revocable at my discretion.
+
+---
+
 ## Non-Goals
 
 - This is NOT a social network replacement
