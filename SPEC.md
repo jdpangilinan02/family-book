@@ -543,13 +543,41 @@ Loaded via HTMX into a slide-out panel or modal:
 - Photo gallery thumbnails (if any)
 - "View full profile" link
 
-### Moments Feed (the main screen)
+### The Core UX Insight
 
-The Moments feed is what most family members see most of the time. It's the living room. The tree is the family portrait on the wall — you glance at it. The feed is the conversation happening in the room.
+Family Book is NOT a social network that family members post to. It is a **sovereign archive** that sits underneath the platforms they already use. The family keeps using WhatsApp, Facebook, Instagram, iMessage — whatever they use today. Family Book silently ingests, archives, organizes, and makes it permanent and searchable.
 
-**Route:** `/` (for logged-in members — the landing page redirects to login for anonymous visitors)
+**The cold start problem:** Day one, the archive is empty and nobody will switch from WhatsApp to post on a new website.
 
-**Layout:** Single-column, reverse-chronological, infinite scroll. Think Instagram's feed stripped of ads, algorithms, and strangers.
+**The solution:** Be a parasite first, be useful second, be better third.
+
+1. **Parasite:** Ingest from everywhere. WhatsApp export, Facebook export, email forwarding, share sheet. Fill the archive with EXISTING content. Family changes zero behavior. Tyler does the setup once.
+2. **Useful:** Once there's content, Family Book becomes the best place to FIND anything. "What was that photo from Christmas 2024?" You can't search WhatsApp for that. You can search Family Book.
+3. **Better:** The feed, tree, birthday reminders, agent API — these become reasons people start posting directly. Not because Tyler forced them, but because it's genuinely better.
+
+**Operational model:** Zero-touch. Tyler sets up ingestion once. Content flows in automatically. Tyler intervenes only for exceptions (merge conflicts, new family members, relationship changes). If Tyler has to manually run exports every week, the archive falls behind and dies.
+
+### Adaptive Home Screen
+
+The same URL (`/`), different experience based on who you are:
+
+| User Type | Detection | Home Screen |
+|-----------|-----------|-------------|
+| Admin (Tyler/Yuliya) | `is_admin = true` | Dashboard: new content, pending imports, system health, quick actions |
+| Active member | `last_activity < 7 days` | Timeline feed: reverse-chronological stream of recent Moments |
+| Casual member | `last_activity > 7 days` | "What's new" summary: photo highlights + milestones since last visit |
+| First visit | `visit_count < 3` | Guided tour: the tree, key faces, "this is your family" |
+| Child/teen (future) | Age-based flag or custom role | Face explorer: tap faces on the tree, see their photos |
+
+No algorithm. No ML. Simple rules based on role and visit recency. Transparent and predictable.
+
+Anonymous visitors → landing page with login/invite options.
+
+### Moments Feed
+
+The Moments feed is the archive viewer. Content comes IN from ingestion pipelines (WhatsApp, email, Facebook, share sheet, direct upload). The feed DISPLAYS it in reverse-chronological order.
+
+**Layout:** Single-column, reverse-chronological, infinite scroll.
 
 ```
 ┌─────────────────────────────────┐
@@ -558,8 +586,8 @@ The Moments feed is what most family members see most of the time. It's the livi
 │  [+ New Moment]                 │  ← floating action button (mobile: bottom-right)
 ├─────────────────────────────────┤
 │  ┌─────────────────────────────┐│
-│  │ 📷  Tyler Martin            ││  ← poster's photo + name
-│  │     2 hours ago · Madrid    ││  ← relative time + location
+│  │ 📷  Tyler Martin            ││  ← source person
+│  │     2h ago · via WhatsApp · Madrid ││  ← time + source + location
 │  │                             ││
 │  │  [═══════════════════════]  ││  ← photo (full-width, aspect-ratio preserved)
 │  │  [═══════════════════════]  ││
@@ -584,7 +612,7 @@ The Moments feed is what most family members see most of the time. It's the livi
 │                                 │
 │  ┌─────────────────────────────┐│
 │  │ 📷  Yuliya Martin           ││
-│  │     Yesterday · Madrid      ││
+│  │     Yesterday · via Email · Madrid ││
 │  │                             ││
 │  │  [photo] [photo] [photo]    ││  ← multi-photo: horizontal scroll or grid
 │  │                             ││
@@ -599,47 +627,38 @@ The Moments feed is what most family members see most of the time. It's the livi
 
 | Element | Source | Notes |
 |---------|--------|-------|
-| Poster avatar | Person.photo_url (circle, 40px) | Tap → person card |
-| Poster name | Person display name | Tap → person profile |
-| Timestamp | Moment.occurred_at | Relative: "2 hours ago", "Yesterday", "March 10". Tap → absolute datetime. |
-| Location | Inferred from poster's residence or manually set | Optional. Only shown if present. |
+| Source person avatar | Person.photo_url (circle, 40px) | Tap → person card |
+| Source person name | Person display name | Tap → person profile |
+| Timestamp | Moment.occurred_at | Relative: "2h ago", "Yesterday", "March 10" |
+| Source platform | Moment.source | "via WhatsApp", "via Email", "via Facebook", "via direct upload". Shows how content arrived. |
+| Location | Person.residence or EXIF data | Optional. Only shown if present. |
 | Media | Photo(s) / Video | Full-width. Single photo: fill card. Multi-photo (2-4): grid. 5+: grid with "+N more" overlay. Video: inline player with poster frame. |
 | Caption | Moment.body | Max 3 lines visible, "more…" expands. Supports emoji. No markdown. |
 | Milestone badge | Moment.milestone_type | 🎂 birthday, 💒 wedding, 🎓 graduation, 👶 new baby, 🕊️ memorial, ✈️ travel. Shown as icon + colored banner. |
 | Reactions | MomentReaction records | Emoji row: ❤️ 4, 😂 2, etc. Tap to add/remove. |
 | Comment count | Count of MomentComment | Tap → expands comment thread inline (HTMX load) |
 
-**Posting a New Moment:**
+**Direct Posting (optional, not the primary content source):**
 
-The posting UX must feel like sending a WhatsApp message, not posting to a social network. WhatsApp is the competitor. The friction must be identical or lower.
+Most content arrives via ingestion pipelines (see Ingestion Architecture below). But for family members who WANT to post directly, the feed has a chat-style input bar at the bottom — WhatsApp-level friction:
 
-**Primary flow (WhatsApp-level friction):**
-1. Tap 📷 button (always visible at bottom of feed, like a chat input bar)
-2. Camera opens OR photo picker opens (device native)
-3. Select photo(s) / take photo (multi-select, max 10)
-4. Caption field appears below photo preview (optional, like WhatsApp caption)
-5. Tap ✈️ send
-6. Photo + caption appear at top of feed. Instantly. Everyone sees it.
+1. Tap 📷 → pick/take photo(s) → caption (optional) → tap ✈️ send
+2. Or type text → send (text-only Moment)
 
-That's it. 4 taps from "I want to share this" to "everyone sees it." Same as WhatsApp.
-
-**The feed input bar (always visible at bottom of feed):**
 ```
 ┌─────────────────────────────────────────────┐
-│  📷  Type a message...              ✈️  │
+│  📷  Share something with the family...  ✈️│
 └─────────────────────────────────────────────┘
 ```
-Just like a chat app. Tap 📷 for photo/video. Type text for a text-only Moment. Tap send. Done.
 
-**Optional metadata (NOT required, discoverable but hidden):**
-- "Tag someone" — small @ icon in caption bar. Autocompletes family names. Optional.
-- "Backdate" — long-press the send button reveals date picker. For uploading old photos.
-- These are power features. They NEVER block the primary flow.
+**Optional metadata (hidden, discoverable):**
+- @ icon → tag a family member (autocomplete)
+- Long-press send → backdate picker (for uploading old photos)
+- These NEVER block the primary flow.
 
-**Technical flow:**
-1. Upload photos → create Photo records → create Moment record → appears at top of feed
-2. HTMX: new Moment prepended to feed without page reload
-3. WebSocket or SSE push: other family members see new Moments appear in real-time without refreshing
+**Real-time updates:**
+- SSE push: new Moments appear at top without refresh
+- Badge on 🏠 tab: "3 new" when Moments arrive while browsing another page
 
 **Infinite Scroll:**
 - Initial load: 20 Moments
@@ -722,18 +741,40 @@ Lightweight threaded comments on Moments.
 }
 ```
 
-### Navigation (revised with Moments as home)
+### Ingestion Architecture (Zero-Touch)
+
+Content flows INTO Family Book through multiple automated pipelines. Tyler sets up each pipeline once. After that, it runs unattended.
+
+| Pipeline | Automation Level | How It Works | Tyler's Setup Work |
+|----------|-----------------|--------------|-------------------|
+| **Email** (Envelope) | Fully automatic | family@martin.fm receives forwarded photos. Envelope parses sender, extracts images, creates Moments. | Configure Envelope route (once) |
+| **WhatsApp group export** | Semi-automatic | Tyler exports family group chat with media. Upload .zip → parser extracts all photos + captions + sender mapping. | Export + upload (~15 min/quarter) |
+| **Facebook data export** | Semi-automatic | Family members request FB data export. Forward download email to family@martin.fm. Envelope catches it, ingestion is automatic. | Tell family members once |
+| **Instagram data export** | Semi-automatic | Same pattern as Facebook. | Tell family members once |
+| **Share sheet (PWA)** | Fully automatic | Family members install PWA. "Share to Family Book" appears in phone's share sheet. Photo goes directly to archive. | Family members install PWA (2 taps) |
+| **Telegram bot** | Fully automatic | Send photos to Family Book bot → auto-creates Moments. | Set up bot (once) |
+| **Auto-generated milestones** | Fully automatic | Cron generates birthday, anniversary, memorial Moments from graph data. | Zero — automatic |
+| **WhatsApp bridge** | TBD — needs research | Continuous monitoring of family group. Highest value, highest complexity. | TBD |
+
+**Ingestion processing pipeline (all sources):**
+1. Content arrives (email, upload, share, bot)
+2. Extract: photos, videos, sender identity, timestamp, caption text
+3. Match sender to Person record (by email, phone, name, or Telegram ID)
+4. Dedup by file hash (SHA-256) — don't import the same photo twice
+5. Create Photo records + Moment record (with source platform tag)
+6. If sender can't be matched → queue for admin review
+7. Moment appears in feed. SSE push notifies active viewers.
+
+### Navigation
 
 | Icon | Route | Label |
 |------|-------|-------|
-| 🏠 | `/` | Home (Moments feed) |
+| 🏠 | `/` | Home (adaptive: dashboard / feed / summary / tour) |
 | 🌳 | `/tree` | Tree |
 | 👥 | `/people` | People |
 | ⚙️ | `/profile` (member) or `/admin` (admin) | Settings / Admin |
 
 Mobile: bottom tab bar (4 icons). Desktop: top nav bar.
-
-**The Moments feed is the default logged-in view.** Not the tree. The tree is one tap away but the feed is where life happens. Бабушка opens the app and sees yesterday's photos of her granddaughter. That's the first thing. Always.
 
 ### Design System
 
