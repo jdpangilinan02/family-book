@@ -757,13 +757,89 @@ Content flows INTO Family Book through multiple automated pipelines. Tyler sets 
 | **WhatsApp bridge** | TBD — needs research | Continuous monitoring of family group. Highest value, highest complexity. | TBD |
 
 **Ingestion processing pipeline (all sources):**
-1. Content arrives (email, upload, share, bot)
+1. Content arrives (email, upload, share, bot, Matrix bridge)
 2. Extract: photos, videos, sender identity, timestamp, caption text
-3. Match sender to Person record (by email, phone, name, or Telegram ID)
+3. Match sender to Person record (by email, phone, name, Telegram ID, or Matrix ID)
 4. Dedup by file hash (SHA-256) — don't import the same photo twice
 5. Create Photo records + Moment record (with source platform tag)
 6. If sender can't be matched → queue for admin review
 7. Moment appears in feed. SSE push notifies active viewers.
+
+### Matrix as Universal Bridge Layer (Hub-and-Spoke Architecture)
+
+Instead of building 6+ separate platform integrations, Family Book uses **Matrix** as a universal bridge layer. One integration (Matrix client) instead of six separate APIs.
+
+**Architecture:**
+
+```
+WhatsApp  ←→  mautrix-whatsapp  ←→  ┌──────────┐  ←→  ┌──────────────┐
+Telegram  ←→  mautrix-telegram  ←→  │  Matrix   │  ←→  │  Family Book  │
+Signal    ←→  mautrix-signal    ←→  │  Server   │  ←→  │  (single      │
+FB Msgr   ←→  mautrix-meta      ←→  │ (Conduit) │  ←→  │   Matrix      │
+Instagram ←→  mautrix-meta      ←→  │           │  ←→  │   client)     │
+iMessage  ←→  mautrix-imessage  ←→  └──────────┘  ←→  └──────────────┘
+SMS/MMS   ←→  matrix-sms        ←→       ↑
+Email     ←→  (direct, no bridge needed)  │
+                                          │
+                                    Mautrix bridges
+                                    (open source,
+                                     self-hosted)
+```
+
+**How it works:**
+1. Each Mautrix bridge connects to one platform using that platform's protocol
+2. Messages from all platforms converge into Matrix rooms
+3. Family Book runs a single Matrix client (bot) that monitors the family room(s)
+4. Inbound: photo posted to WhatsApp group → mautrix-whatsapp → Matrix room → Family Book ingests as Moment
+5. Outbound: Family Book creates notification → sends to Matrix room → bridges fan out to each person's preferred platform
+6. Reactions: family member reacts on any platform → bridge relays to Matrix → Family Book records reaction
+
+**Why Matrix:**
+- **One integration, not six.** Family Book only needs a Matrix client SDK. Adding a new platform = adding a new bridge, zero Family Book code changes.
+- **Open source and self-hosted.** No vendor dependency. No API pricing surprises. Bridges run on your infrastructure.
+- **Bidirectional.** Messages, photos, reactions, read receipts flow both directions through bridges.
+- **Media support.** All Mautrix bridges support photo and video transfer.
+- **Battle-tested.** Beeper (acquired by Automattic) ran this exact architecture at scale for multi-platform messaging.
+- **Philosophically aligned.** Matrix is a decentralized, open protocol. Family Book is a sovereign data platform. Same values.
+
+**Mautrix bridge inventory:**
+
+| Bridge | Platform | Media | Reactions | Group Monitoring | Status |
+|--------|----------|-------|-----------|-----------------|--------|
+| mautrix-whatsapp | WhatsApp | ✅ photos, videos, docs | ✅ | ✅ | Mature, actively maintained |
+| mautrix-telegram | Telegram | ✅ photos, videos, stickers | ✅ | ✅ | Mature |
+| mautrix-signal | Signal | ✅ photos, videos | ✅ | ✅ | Mature |
+| mautrix-meta | FB Messenger + Instagram | ✅ photos, videos | ✅ | ✅ | Active development |
+| mautrix-imessage | iMessage (macOS only) | ✅ photos, videos | ✅ | ⚠️ (requires Mac) | Requires always-on Mac |
+| matrix-hookshot | Webhooks, generic | Varies | — | — | For custom integrations |
+
+**Matrix server options:**
+
+| Server | Language | RAM | Notes |
+|--------|----------|-----|-------|
+| Conduit | Rust | ~50MB | Lightweight, single-binary. Best for Family Book's scale. |
+| Dendrite | Go | ~100MB | Second-gen Matrix server. Good performance. |
+| Synapse | Python | ~500MB+ | Reference implementation. Heavy. Overkill for family use. |
+
+**Recommendation: Conduit** — smallest footprint, single binary, perfect for a family-scale deployment alongside the Family Book app on Railway or a VPS.
+
+**Self-hosting requirements:**
+- Conduit + 3 bridges (WhatsApp, Telegram, Signal): ~200MB RAM total
+- Runs alongside Family Book on the same Railway instance or VPS
+- Docker Compose for the full stack: Family Book + Conduit + bridges
+
+**ToS risks (inherit from platform, not from Matrix):**
+- mautrix-whatsapp: uses WhatsApp Web protocol (same as wacli). Gray area — Meta doesn't officially support it but millions use unofficial clients. Risk: account ban if detected.
+- mautrix-telegram: uses official Telegram Bot API or client API. Low risk.
+- mautrix-signal: uses Signal's protocol directly. Gray area — Signal doesn't endorse third-party clients.
+- mautrix-meta: uses Facebook's internal APIs. Higher risk for Messenger/Instagram.
+- mautrix-imessage: requires a real Mac. Uses Apple's private framework. Gray area.
+
+**The hub-and-spoke principle:**
+Family Book is the hub. Matrix is the spoke infrastructure. Each family member participates from their preferred platform. Content converges in the archive. Notifications fan out through the bridges. No single platform failure kills the system.
+
+**Fallback without Matrix:**
+If Matrix bridges prove unreliable for a specific platform, Family Book can still fall back to direct integrations (Telegram Bot API, Twilio SMS, Envelope email) for that channel. Matrix is the preferred path, not the only path.
 
 ### Grandparent Experience (Push-First Design)
 
