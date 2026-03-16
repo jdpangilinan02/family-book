@@ -1,0 +1,100 @@
+{
+  "app": {
+    "name": "Family Book",
+    "tagline": "Our living room, not the mall"
+  },
+  "nav": {
+    "tree": "Family Tree",
+    "people": "People",
+    "moments": "Moments",
+    "admin": "Admin",
+    "settings": "Settings",
+    "logout": "Log Out",
+    "login": "Log In"
+  },
+  "person": {
+    "birthday": "Birthday",
+    "contact": "Contact",
+    "bio": "About",
+    "add": "Add Person",
+    "edit": "Edit",
+    "name": "Name",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "patronymic": "Patronymic",
+    "birth_last_name": "Birth Last Name",
+    "nickname": "Nickname",
+    "gender": "Gender",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "birth_date": "Date of Birth",
+    "death_date": "Date of Death",
+    "birth_place": "Place of Birth",
+    "residence": "Current Residence",
+    "languages": "Languages",
+    "living": "Living",
+    "deceased": "Deceased",
+    "memorial": "Memorial"
+  },
+  "relationships": {
+    "parents": "Parents",
+    "children": "Children",
+    "partners": "Partners",
+    "siblings": "Siblings",
+    "add_parent": "Add Parent",
+    "add_child": "Add Child",
+    "add_partner": "Add Partner"
+  },
+  "moments": {
+    "feed": "Family Feed",
+    "new": "New Moment",
+    "photo": "Photo",
+    "video": "Video",
+    "text": "Text",
+    "milestone": "Milestone",
+    "share": "Share",
+    "react": "React",
+    "comment": "Comment",
+    "no_moments": "No moments yet"
+  },
+  "admin": {
+    "dashboard": "Admin Dashboard",
+    "invite": "Send Invite",
+    "approve": "Approve",
+    "suspend": "Suspend",
+    "backup": "Backup",
+    "backup_now": "Backup Now",
+    "download_backup": "Download Backup",
+    "audit_log": "Audit Log",
+    "pending_approvals": "Pending Approvals"
+  },
+  "auth": {
+    "login": "Log In",
+    "login_with_facebook": "Log In with Facebook",
+    "magic_link": "Send Magic Link",
+    "email_placeholder": "your@email.com",
+    "check_email": "Check your email for the login link",
+    "invite_welcome": "Welcome to Family Book",
+    "claim_invite": "Join Family"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "success": "Done!",
+    "confirm_delete": "Are you sure you want to delete this?",
+    "no_results": "No results found"
+  },
+  "tree": {
+    "title": "Family Tree",
+    "zoom_in": "Zoom In",
+    "zoom_out": "Zoom Out",
+    "reset_view": "Reset View",
+    "our_family": "Our Family"
+  }
+}

@@ -1,0 +1,72 @@
+# Family Book — Full Stack
+# Bring-up order: conduit → bridges → familybook
+# See SPEC.md § Matrix as Universal Bridge Layer
+
+services:
+  familybook:
+    build: .
+    ports: ["${PORT:-8000}:8000"]
+    volumes: ["./data:/data"]
+    env_file: .env
+    environment:
+      - MATRIX_HOMESERVER=http://conduit:6167
+    depends_on:
+      conduit:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  conduit:
+    image: matrixconduit/matrix-conduit:latest
+    volumes: ["./conduit-data:/var/lib/matrix-conduit"]
+    environment:
+      CONDUIT_SERVER_NAME: ${CONDUIT_SERVER_NAME:-martin.fm}
+      CONDUIT_DATABASE_BACKEND: rocksdb
+      CONDUIT_PORT: 6167
+      CONDUIT_ALLOW_REGISTRATION: "false"
+      CONDUIT_MAX_REQUEST_SIZE: 20000000  # 20MB for media
+    ports: ["6167:6167"]
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:6167/_matrix/client/versions"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  mautrix-whatsapp:
+    image: dock.mau.dev/mautrix/whatsapp:latest
+    volumes: ["./mautrix-whatsapp:/data"]
+    depends_on:
+      conduit:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mautrix-telegram:
+    image: dock.mau.dev/mautrix/telegram:latest
+    volumes: ["./mautrix-telegram:/data"]
+    depends_on:
+      conduit:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mautrix-signal:
+    image: dock.mau.dev/mautrix/signal:latest
+    volumes: ["./mautrix-signal:/data"]
+    depends_on:
+      conduit:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mautrix-meta:
+    image: dock.mau.dev/mautrix/meta:latest
+    volumes: ["./mautrix-meta:/data"]
+    depends_on:
+      conduit:
+        condition: service_healthy
+    restart: unless-stopped

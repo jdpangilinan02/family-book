@@ -1,0 +1,100 @@
+{
+  "app": {
+    "name": "Libro Familiar",
+    "tagline": "Nuestro salón, no el centro comercial"
+  },
+  "nav": {
+    "tree": "Árbol Familiar",
+    "people": "Personas",
+    "moments": "Momentos",
+    "admin": "Administrar",
+    "settings": "Configuración",
+    "logout": "Cerrar Sesión",
+    "login": "Iniciar Sesión"
+  },
+  "person": {
+    "birthday": "Cumpleaños",
+    "contact": "Contacto",
+    "bio": "Acerca de",
+    "add": "Agregar Persona",
+    "edit": "Editar",
+    "name": "Nombre",
+    "first_name": "Nombre",
+    "last_name": "Apellido",
+    "patronymic": "Patronímico",
+    "birth_last_name": "Apellido de Soltera/o",
+    "nickname": "Apodo",
+    "gender": "Género",
+    "male": "Masculino",
+    "female": "Femenino",
+    "other": "Otro",
+    "birth_date": "Fecha de Nacimiento",
+    "death_date": "Fecha de Fallecimiento",
+    "birth_place": "Lugar de Nacimiento",
+    "residence": "Residencia Actual",
+    "languages": "Idiomas",
+    "living": "Vivo/a",
+    "deceased": "Fallecido/a",
+    "memorial": "Memorial"
+  },
+  "relationships": {
+    "parents": "Padres",
+    "children": "Hijos",
+    "partners": "Parejas",
+    "siblings": "Hermanos",
+    "add_parent": "Agregar Padre/Madre",
+    "add_child": "Agregar Hijo/a",
+    "add_partner": "Agregar Pareja"
+  },
+  "moments": {
+    "feed": "Novedades Familiares",
+    "new": "Nuevo Momento",
+    "photo": "Foto",
+    "video": "Video",
+    "text": "Texto",
+    "milestone": "Hito",
+    "share": "Compartir",
+    "react": "Reaccionar",
+    "comment": "Comentar",
+    "no_moments": "Aún no hay momentos"
+  },
+  "admin": {
+    "dashboard": "Panel de Administración",
+    "invite": "Enviar Invitación",
+    "approve": "Aprobar",
+    "suspend": "Suspender",
+    "backup": "Copia de Seguridad",
+    "backup_now": "Hacer Copia Ahora",
+    "download_backup": "Descargar Copia",
+    "audit_log": "Registro de Auditoría",
+    "pending_approvals": "Aprobaciones Pendientes"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "login_with_facebook": "Iniciar Sesión con Facebook",
+    "magic_link": "Enviar Enlace Mágico",
+    "email_placeholder": "tu@email.com",
+    "check_email": "Revisa tu correo para el enlace de inicio de sesión",
+    "invite_welcome": "Bienvenido/a al Libro Familiar",
+    "claim_invite": "Unirse a la Familia"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "search": "Buscar",
+    "loading": "Cargando...",
+    "error": "Algo salió mal",
+    "success": "¡Listo!",
+    "confirm_delete": "¿Estás seguro/a de que deseas eliminar esto?",
+    "no_results": "No se encontraron resultados"
+  },
+  "tree": {
+    "title": "Árbol Familiar",
+    "zoom_in": "Acercar",
+    "zoom_out": "Alejar",
+    "reset_view": "Restablecer Vista",
+    "our_family": "Nuestra Familia"
+  }
+}

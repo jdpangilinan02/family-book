@@ -32,6 +32,12 @@ class Settings(BaseSettings):
     ENVELOPE_API_KEY: str = ""
     ENVELOPE_WEBHOOK_SECRET: str = ""
 
+    # Matrix
+    MATRIX_HOMESERVER: str = ""
+    MATRIX_BOT_USER: str = ""
+    MATRIX_BOT_PASSWORD: str = ""
+    MATRIX_FAMILY_ROOM: str = ""
+
     # Logging
     LOG_LEVEL: str = "INFO"
     PORT: int = 8000

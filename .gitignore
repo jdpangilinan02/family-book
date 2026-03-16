@@ -14,3 +14,10 @@ __pycache__/
 dist/
 build/
 .ruff_cache/
+
+# Docker Compose bridge data (one-time setup, local secrets)
+conduit-data/
+mautrix-whatsapp/
+mautrix-telegram/
+mautrix-signal/
+mautrix-meta/
