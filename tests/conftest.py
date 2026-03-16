@@ -1,21 +1,29 @@
 import os
+
 import pytest
 import pytest_asyncio
+from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy import event
-
-from app.models.base import Base
-from app.models.person import Person, PersonSource, AccountState
-from app.models.relationships import ParentChild, Partnership
-from app.models.auth import UserSession
-from app.services.auth_service import create_session
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 # Set env vars before any app imports
 os.environ.setdefault("SECRET_KEY", "test-secret-key-not-for-production-use-1234567890")
 os.environ.setdefault("FERNET_KEY", "dGVzdC1mZXJuZXQta2V5LW5vdC1mb3ItcHJvZHVjdGlvbg==")
 os.environ.setdefault("BASE_URL", "http://localhost:8000")
 os.environ.setdefault("DATABASE_URL", "sqlite:///data/family.db")
+
+from app.database import get_db
+from app.models.base import Base
+from app.models.person import Person, PersonSource, AccountState
+from app.models.relationships import ParentChild, Partnership
+from app.routes.auth_routes import router as auth_router
+from app.routes.health import router as health_router
+from app.routes.persons import router as persons_router
+from app.routes.relationships import router as relationships_router
+from app.routes.tree import router as tree_router
+from app.routes.media import router as media_router
+from app.services.auth_service import create_session
 
 
 def _set_sqlite_pragmas(dbapi_conn, connection_record):
@@ -27,22 +35,31 @@ def _set_sqlite_pragmas(dbapi_conn, connection_record):
 
 
 @pytest_asyncio.fixture
-async def db():
-    """In-memory SQLite database for tests."""
-    engine = create_async_engine("sqlite+aiosqlite://", echo=False)
-    event.listens_for(engine.sync_engine, "connect")(_set_sqlite_pragmas)
+async def engine():
+    """In-memory SQLite engine for tests."""
+    test_engine = create_async_engine("sqlite+aiosqlite://", echo=False)
+    event.listens_for(test_engine.sync_engine, "connect")(_set_sqlite_pragmas)
 
-    async with engine.begin() as conn:
+    async with test_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    session_factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    yield test_engine
 
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await test_engine.dispose()
+
+
+@pytest.fixture
+def session_factory(engine):
+    return async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+
+@pytest_asyncio.fixture
+async def db(session_factory):
+    """Database session for direct test setup and assertions."""
     async with session_factory() as session:
         yield session
-
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-    await engine.dispose()
 
 
 @pytest_asyncio.fixture
@@ -124,22 +141,56 @@ async def seeded_db(db: AsyncSession):
     yield db
 
 
+@pytest.fixture
+def phase1_app():
+    """Phase 1 app assembly, isolated from in-progress Phase 2/3 work in app.main."""
+    application = FastAPI(
+        title="Family Book",
+        description="Private, self-hosted family tree and archive",
+        version="0.1.0",
+    )
+    application.include_router(health_router)
+    application.include_router(auth_router)
+    application.include_router(persons_router)
+    application.include_router(relationships_router)
+    application.include_router(tree_router)
+    application.include_router(media_router)
+    return application
+
+
+@pytest.fixture
+def app_under_test(phase1_app: FastAPI):
+    """
+    Prefer the live app factory when concurrent Phase 2/3 work is importable.
+    Fall back to a Phase 1-only app while app.main is in a partial state.
+    """
+    try:
+        from app.main import create_app
+    except Exception:
+        return phase1_app
+    return create_app()
+
+
 @pytest_asyncio.fixture
-async def client(seeded_db: AsyncSession):
-    """Test client with auth dependency overridden."""
-    from app.main import app
-    from app.database import get_db
+async def client(seeded_db: AsyncSession, session_factory, app_under_test: FastAPI):
+    """Test client with per-request database sessions."""
 
     async def override_get_db():
-        yield seeded_db
+        async with session_factory() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
 
-    app.dependency_overrides[get_db] = override_get_db
+    app_under_test.dependency_overrides[get_db] = override_get_db
 
-    transport = ASGITransport(app=app)
+    transport = ASGITransport(app=app_under_test)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
-    app.dependency_overrides.clear()
+    app_under_test.dependency_overrides.clear()
 
 
 @pytest_asyncio.fixture

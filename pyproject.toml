@@ -16,6 +16,7 @@ dependencies = [
     "aiofiles>=24,<25",
     "aiosqlite>=0.20,<1",
     "greenlet>=3.1,<4",
+    "pillow>=12.1.1",
 ]
 
 [project.optional-dependencies]
