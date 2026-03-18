@@ -182,6 +182,46 @@ locales/                 # i18n: en.json, es.json, ru.json
 
 ---
 
+## Vision
+
+Family Book isn't just a family tree app. It's the **private social network your family actually needs**.
+
+### The Problem
+
+Your family's memories are scattered across platforms that don't care about your family:
+
+- **WhatsApp** — Photos and voice notes buried in group chats. Phone dies, memories die.
+- **Facebook** — Your family photos train their AI. Your grandmother's face is in a dataset.
+- **iCloud/Google Photos** — Shared albums with no context. Who is this person? What year was this?
+- **Ancestry.com** — $299/year to see your own family tree. Your DNA sold to insurance companies.
+- **Physical albums** — Rotting in a closet in Vancouver. One flood away from gone.
+
+### The Vision
+
+A single place where:
+
+1. **Every family memory flows in automatically.** WhatsApp photos arrive via Matrix bridge. Email forwards get parsed. Old scanned photos get uploaded with dates and context.
+
+2. **The family tree IS the permission system.** Your cousin in Moscow sees different things than your neighbor. No admin panel needed — closeness in the tree determines closeness in access. This is how privacy works in real families.
+
+3. **Multiple families share one instance.** The Martins and the Volodins on the same server, each seeing their own branch, with the shared grandchildren in the middle. Install once, serve the whole extended family.
+
+4. **Every fact has provenance.** "Grandma was born in 1943" — who said that? When? Was it from a GEDCOM import, a WhatsApp message from Aunt Natasha, or a birth certificate scan? Source tracking on every piece of data.
+
+5. **It works for every culture.** Patronymics (Russian), maiden names (Western), Eastern name order (Japanese), fuzzy dates ("about 1943"), and relationship labels that respect the actual complexity of modern families — step-parents, adoptive parents, guardians, domestic partners.
+
+6. **It survives you.** SQLite database. Single file. Copy it to a USB drive. Your great-grandchildren can open it in 50 years with any programming language on any platform. No vendor lock-in. No subscription to expire. No company to go bankrupt.
+
+### The Bridge Problem (and the Opportunity)
+
+The biggest technical challenge is importing from messaging platforms. WhatsApp, Messenger, and iMessage don't offer easy APIs for personal data export. The current architecture uses Matrix bridges (Mautrix) to connect to these platforms using your own account — no business verification needed.
+
+But for non-technical families, setting up Matrix bridges is unrealistic. A potential path: a hosted bridge service (like a "Family Book Connector") that handles the Twilio/WhatsApp Business API complexity, pre-approved for personal family use. One-click enable, and your family's WhatsApp photos flow into your Family Book automatically.
+
+This is an unsolved problem in the self-hosted space. Whoever solves it unlocks a massive market of families who want to own their data but can't navigate API onboarding.
+
+---
+
 ## Roadmap
 
 - [x] **Phase 1** — Core models, API, tests (45/45 green)
