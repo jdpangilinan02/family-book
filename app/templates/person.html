@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}{{ person.display_name }} — {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="profile-header">
+  <div class="avatar avatar--xl">
+    {% if person.photo_url %}
+    <img src="/api/media/{{ person.photo_url }}/file" alt="{{ person.display_name }}">
+    {% else %}
+    {{ person.display_name[:2] }}
+    {% endif %}
+  </div>
+  <h1 class="profile-header__name">{{ person.display_name }}</h1>
+  {% if person.nickname %}
+  <p class="profile-header__nickname">"{{ person.nickname }}"</p>
+  {% endif %}
+  <div class="profile-header__meta">
+    {% if person.residence_country_code %}
+    <span>{{ country_flag(person.residence_country_code) }} {{ person.residence_place or '' }}</span>
+    {% endif %}
+    {% if person.birth_date_raw %}
+    <span>{{ person.birth_date_raw }}</span>
+    {% endif %}
+    {% if not person.is_living %}
+    <span>{{ t('person.deceased') }}</span>
+    {% endif %}
+  </div>
+  {% if can_edit %}
+  <div style="margin-top: 12px;">
+    <a href="/people/{{ person.id }}/edit" class="btn btn--sm" style="background:rgba(255,255,255,0.2); color:white;">{{ t('person.edit') }}</a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="container">
+  {% if person.bio %}
+  <div class="profile-section">
+    <h3 class="profile-section__title">{{ t('person.bio') }}</h3>
+    <p>{{ person.bio }}</p>
+  </div>
+  {% endif %}
+
+  {% if person.languages %}
+  <div class="profile-section">
+    <h3 class="profile-section__title">{{ t('person.languages') }}</h3>
+    <p>{{ person.languages | join(', ') }}</p>
+  </div>
+  {% endif %}
+
+  <!-- Contact buttons -->
+  {% if person.contact_whatsapp or person.contact_telegram or person.contact_signal or person.contact_email %}
+  <div class="profile-section">
+    <h3 class="profile-section__title">{{ t('person.contact') }}</h3>
+    <div class="contact-btns">
+      {% if person.contact_whatsapp %}
+      <a href="https://wa.me/{{ person.contact_whatsapp }}" class="contact-btn" target="_blank" rel="noopener">WhatsApp</a>
+      {% endif %}
+      {% if person.contact_telegram %}
+      <a href="https://t.me/{{ person.contact_telegram }}" class="contact-btn" target="_blank" rel="noopener">Telegram</a>
+      {% endif %}
+      {% if person.contact_signal %}
+      <span class="contact-btn">Signal: {{ person.contact_signal }}</span>
+      {% endif %}
+      {% if person.contact_email %}
+      <a href="mailto:{{ person.contact_email }}" class="contact-btn">Email</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Relationships -->
+  <div class="profile-section" id="relationships-section">
+    <h3 class="profile-section__title">{{ t('relationships.parents') }}</h3>
+    <div class="rel-chips mb-8">
+      {% for p in parents %}
+      <a href="/people/{{ p.id }}" class="rel-chip">{{ p.display_name }}</a>
+      {% endfor %}
+      {% if not parents %}<span class="text-muted text-sm">None listed</span>{% endif %}
+    </div>
+
+    <h3 class="profile-section__title mt-16">{{ t('relationships.partners') }}</h3>
+    <div class="rel-chips mb-8">
+      {% for p in partners %}
+      <a href="/people/{{ p.id }}" class="rel-chip">{{ p.display_name }}</a>
+      {% endfor %}
+      {% if not partners %}<span class="text-muted text-sm">None listed</span>{% endif %}
+    </div>
+
+    <h3 class="profile-section__title mt-16">{{ t('relationships.children') }}</h3>
+    <div class="rel-chips mb-8">
+      {% for c in children %}
+      <a href="/people/{{ c.id }}" class="rel-chip">{{ c.display_name }}</a>
+      {% endfor %}
+      {% if not children %}<span class="text-muted text-sm">None listed</span>{% endif %}
+    </div>
+
+    <h3 class="profile-section__title mt-16">{{ t('relationships.siblings') }}</h3>
+    <div class="rel-chips mb-8">
+      {% for s in siblings %}
+      <a href="/people/{{ s.id }}" class="rel-chip">{{ s.display_name }}</a>
+      {% endfor %}
+      {% if not siblings %}<span class="text-muted text-sm">None listed</span>{% endif %}
+    </div>
+  </div>
+
+  <!-- Media gallery -->
+  <div class="profile-section">
+    <h3 class="profile-section__title">Photos &amp; Media</h3>
+    <div id="person-media"
+         hx-get="/partials/media-gallery?person_id={{ person.id }}"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+      <div class="spinner" style="margin: 16px auto;"></div>
+    </div>
+  </div>
+
+  <!-- Moments by this person -->
+  <div class="profile-section">
+    <h3 class="profile-section__title">{{ t('nav.moments') }}</h3>
+    <div id="person-moments"
+         hx-get="/partials/moments?person={{ person.id }}"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+      <div class="spinner" style="margin: 16px auto;"></div>
+    </div>
+  </div>
+
+  <div style="height:32px;"></div>
+</div>
+{% endblock %}

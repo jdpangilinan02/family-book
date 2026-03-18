@@ -29,6 +29,7 @@ async def list_persons(
     query = select(Person).where(Person.visibility != Visibility.hidden.value)
 
     if search:
+        query = query.where(Person.is_root.is_(False))
         like = f"%{search}%"
         query = query.where(
             (Person.first_name.ilike(like))

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ t('tree.title') }} — {{ t('app.name') }}{% endblock %}
+{% block head %}
+<style>.page { padding-top: var(--nav-h); padding-bottom: 0; }</style>
+{% endblock %}
+
+{% block content %}
+<div class="tree-page" id="tree-page">
+  <div class="tree-controls">
+    <button onclick="treeZoomIn()" title="{{ t('tree.zoom_in') }}">+</button>
+    <button onclick="treeZoomOut()" title="{{ t('tree.zoom_out') }}">&minus;</button>
+    <button onclick="treeReset()" title="{{ t('tree.reset_view') }}">&#8634;</button>
+  </div>
+
+  <svg id="tree-svg"></svg>
+
+  <div class="person-sidebar" id="person-sidebar">
+    <button class="person-sidebar__close" onclick="closeSidebar()">&times;</button>
+    <div id="sidebar-content"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="/static/js/tree.js"></script>
+{% endblock %}

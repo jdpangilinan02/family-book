@@ -55,7 +55,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Content Security Policy
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline'; "
+            "script-src 'self' 'unsafe-inline' https://unpkg.com https://d3js.org; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: blob:; "
             "connect-src 'self'; "

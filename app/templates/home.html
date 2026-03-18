@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}{{ t('moments.feed') }} — {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 16px; padding-bottom: 16px;">
+  <div class="flex-between mb-16">
+    <h1 style="font-family: var(--font-serif); font-size: 1.3rem;">{{ t('moments.feed') }}</h1>
+    <div class="filter-bar">
+      <select class="form-select" style="width:auto; padding:6px 10px; font-size:0.85rem; border-radius: var(--radius-full);"
+              onchange="filterMoments(this.value)" id="moment-filter">
+        <option value="">All</option>
+        <option value="photo">{{ t('moments.photo') }}</option>
+        <option value="milestone">{{ t('moments.milestone') }}</option>
+        <option value="text">{{ t('moments.text') }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="moments-feed">
+    {% for m in moments %}
+      {% include "partials/moment_card.html" %}
+    {% endfor %}
+    {% if not moments %}
+    <div class="empty-state">
+      <div class="empty-state__icon">&#128247;</div>
+      <p class="empty-state__text">{{ t('moments.no_moments') }}</p>
+      <div class="empty-state__action">
+        <button class="btn btn--primary" onclick="document.getElementById('compose-input').focus()">
+          {{ t('moments.new') }}
+        </button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if moments and moments|length >= 20 %}
+  <div id="load-more"
+       hx-get="/partials/moments?before={{ moments[-1].id }}"
+       hx-trigger="revealed"
+       hx-swap="afterend"
+       hx-indicator="#load-more-spinner">
+    <div style="text-align:center; padding: 20px;">
+      <div class="spinner" id="load-more-spinner" style="margin: 0 auto;"></div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="feed-spacer"></div>
+</div>
+
+<!-- Compose bar -->
+<div class="compose-bar" id="compose-bar">
+  <label class="compose-bar__photo-btn" for="compose-file">&#128247;</label>
+  <input type="file" id="compose-file" accept="image/*,video/*" multiple onchange="handleComposeFile(this)">
+  <input type="text" class="compose-bar__input" id="compose-input"
+         placeholder="{{ t('moments.share') }}..." onkeydown="if(event.key==='Enter')submitMoment()">
+  <button class="compose-bar__send" onclick="submitMoment()" aria-label="Send">&#9993;</button>
+</div>
+
+<!-- New moment modal for photo upload -->
+<div id="compose-modal" class="modal-backdrop hidden" onclick="if(event.target===this)closeComposeModal()">
+  <div class="modal">
+    <div class="modal__header">
+      <span class="modal__title">{{ t('moments.new') }}</span>
+      <button class="modal__close" onclick="closeComposeModal()">&times;</button>
+    </div>
+    <form id="compose-form" onsubmit="submitMomentWithMedia(event)">
+      <div class="modal__body">
+        <div id="compose-preview" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;"></div>
+        <div class="form-group">
+          <textarea class="form-textarea" name="body" id="compose-body" rows="2"
+                    placeholder="Say something..."></textarea>
+        </div>
+      </div>
+      <div class="modal__footer">
+        <button type="button" class="btn btn--secondary" onclick="closeComposeModal()">{{ t('common.cancel') }}</button>
+        <button type="submit" class="btn btn--primary">{{ t('moments.share') }}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const COMPOSE_FILES = [];
+
+function filterMoments(kind) {
+  const url = kind ? '/?kind=' + kind : '/';
+  window.location.href = url;
+}
+
+function handleComposeFile(input) {
+  COMPOSE_FILES.length = 0;
+  const preview = document.getElementById('compose-preview');
+  while (preview.firstChild) preview.removeChild(preview.firstChild);
+  for (const f of input.files) {
+    COMPOSE_FILES.push(f);
+    if (f.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(f);
+      img.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;';
+      preview.appendChild(img);
+    }
+  }
+  if (COMPOSE_FILES.length > 0) {
+    document.getElementById('compose-modal').classList.remove('hidden');
+  }
+}
+
+function closeComposeModal() {
+  document.getElementById('compose-modal').classList.add('hidden');
+  COMPOSE_FILES.length = 0;
+  const preview = document.getElementById('compose-preview');
+  while (preview.firstChild) preview.removeChild(preview.firstChild);
+  document.getElementById('compose-file').value = '';
+}
+
+async function submitMoment() {
+  const input = document.getElementById('compose-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.disabled = true;
+  try {
+    const resp = await fetch('/api/moments', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({kind: 'text', body: text})
+    });
+    if (resp.ok) {
+      input.value = '';
+      window.location.reload();
+    }
+  } finally {
+    input.disabled = false;
+  }
+}
+
+async function submitMomentWithMedia(e) {
+  e.preventDefault();
+  const body = document.getElementById('compose-body').value;
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = '{{ t("common.loading") }}';
+
+  try {
+    // Upload media first
+    const mediaIds = [];
+    for (const file of COMPOSE_FILES) {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('person_id', '{{ current_user.id if current_user else "" }}');
+      const resp = await fetch('/api/media', {method: 'POST', body: fd});
+      if (resp.ok) {
+        const data = await resp.json();
+        mediaIds.push(data.id);
+      }
+    }
+
+    // Create moment
+    const kind = mediaIds.length > 0 ? 'photo' : 'text';
+    await fetch('/api/moments', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({kind, body: body || null, media_ids: mediaIds})
+    });
+    closeComposeModal();
+    window.location.reload();
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '{{ t("moments.share") }}';
+  }
+}
+</script>
+{% endblock %}

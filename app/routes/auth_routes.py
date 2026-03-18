@@ -1,5 +1,7 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,10 +14,18 @@ from app.services.auth_service import (
     create_magic_link,
     create_session,
     delete_session,
+    get_valid_invite,
     validate_magic_link,
 )
 
 router = APIRouter(tags=["auth"])
+logger = logging.getLogger(__name__)
+
+
+def _redact_token(token: str) -> str:
+    if len(token) <= 8:
+        return token
+    return f"{token[:8]}..."
 
 
 class MagicLinkRequest(BaseModel):
@@ -25,18 +35,7 @@ class MagicLinkRequest(BaseModel):
 @router.get("/invite/{token}")
 async def get_invite(token: str, db: AsyncSession = Depends(get_db)):
     """Show invite claim page data."""
-    from app.models.auth import Invite
-    from datetime import datetime, timezone
-
-    result = await db.execute(
-        select(Invite).where(
-            Invite.token == token,
-            Invite.claimed_at.is_(None),
-            Invite.revoked == False,
-            Invite.expires_at > datetime.now(timezone.utc),
-        )
-    )
-    invite = result.scalar_one_or_none()
+    invite = await get_valid_invite(db, token)
     if not invite:
         raise HTTPException(status_code=404, detail="Invalid or expired invite")
 
@@ -99,12 +98,13 @@ async def request_magic_link(
 
     if person:
         token = await create_magic_link(db, person.id)
-        settings = get_settings()
-        link = f"{settings.BASE_URL}/auth/magic-link/{token}"
         # TODO: Send email via SMTP or Envelope API
-        # For now, log the link (dev only)
-        import logging
-        logging.getLogger(__name__).info(f"Magic link for {person.contact_email}: {link}")
+        # For now, log a redacted token prefix (dev only)
+        logger.info(
+            "Magic link for %s: token=%s",
+            person.contact_email,
+            _redact_token(token),
+        )
 
     return {"message": "If that email is registered, a login link has been sent."}
 

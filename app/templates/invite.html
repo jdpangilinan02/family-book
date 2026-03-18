@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="{{ locale }}" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ t('auth.invite_welcome') }} — {{ t('app.name') }}</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <meta name="theme-color" content="#2d5016">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card" style="text-align:center;">
+      <h1 class="auth-card__title">{{ t('auth.invite_welcome') }}</h1>
+
+      {% if error %}
+      <p style="color: var(--danger); margin: 16px 0;">{{ error }}</p>
+      {% else %}
+      <p class="auth-card__subtitle" style="margin-bottom:16px;">
+        {{ person_name }}
+        {% if branch %}<br><span class="text-sm text-muted" style="text-transform:capitalize;">{{ branch }}</span>{% endif %}
+      </p>
+
+      <p style="color: var(--text-muted); font-size:0.9rem; margin-bottom: 24px;">
+        You've been invited to join the family. Confirm to get access to the tree, photos, and moments.
+      </p>
+
+      <form id="claim-form" onsubmit="claimInvite(event)">
+        <button type="submit" class="btn btn--primary btn--block btn--lg" id="claim-btn">
+          {{ t('auth.claim_invite') }}
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    async function claimInvite(e) {
+      e.preventDefault();
+      const btn = document.getElementById('claim-btn');
+      btn.disabled = true;
+      btn.textContent = '{{ t("common.loading") }}';
+      try {
+        const resp = await fetch('{{ "/invite/" + token + "/claim" }}', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: '{}'
+        });
+        if (resp.ok) {
+          window.location.href = '/';
+        } else {
+          const data = await resp.json();
+          btn.textContent = data.detail || '{{ t("common.error") }}';
+        }
+      } catch(err) {
+        btn.disabled = false;
+        btn.textContent = '{{ t("auth.claim_invite") }}';
+      }
+    }
+  </script>
+</body>
+</html>

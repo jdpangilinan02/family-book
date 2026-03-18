@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}{{ t('admin.dashboard') }} — {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="container-wide" style="padding-top: 16px;">
+  <h1 style="font-family: var(--font-serif); font-size: 1.3rem; margin-bottom: 16px;">{{ t('admin.dashboard') }}</h1>
+
+  <!-- Stats -->
+  <div class="admin-grid mb-24">
+    <div class="stat-card">
+      <div class="stat-card__label">People</div>
+      <div class="stat-card__value">{{ stats.persons }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__label">Moments</div>
+      <div class="stat-card__value">{{ stats.moments }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__label">Media Files</div>
+      <div class="stat-card__value">{{ stats.media }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__label">Pending Accounts</div>
+      <div class="stat-card__value">{{ stats.pending }}</div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="card mb-16">
+    <div class="card__body">
+      <h2 style="font-size: 1rem; font-weight: 600; margin-bottom: 12px;">Quick Actions</h2>
+      <div class="flex gap-8" style="flex-wrap:wrap;">
+        <a href="/admin/people/new" class="btn btn--primary btn--sm">+ Add Person</a>
+        <button class="btn btn--secondary btn--sm" onclick="triggerBackup()">{{ t('admin.backup_now') }}</button>
+        <button class="btn btn--secondary btn--sm" onclick="downloadBackup()">{{ t('admin.download_backup') }}</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Approvals -->
+  {% if pending_persons %}
+  <div class="card mb-16">
+    <div class="card__body">
+      <h2 style="font-size: 1rem; font-weight: 600; margin-bottom: 12px;">{{ t('admin.pending_approvals') }}</h2>
+      {% for p in pending_persons %}
+      <div class="invite-row">
+        <span class="invite-row__name">{{ p.display_name }}</span>
+        <span class="invite-row__status invite-row__status--active">Pending</span>
+        <button class="btn btn--primary btn--sm" onclick="approvePerson('{{ p.id }}')">{{ t('admin.approve') }}</button>
+        <button class="btn btn--danger btn--sm" onclick="suspendPerson('{{ p.id }}')">{{ t('admin.suspend') }}</button>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Invite Management -->
+  <div class="card mb-16">
+    <div class="card__body">
+      <h2 style="font-size: 1rem; font-weight: 600; margin-bottom: 12px;">{{ t('admin.invite') }}</h2>
+      <div class="form-group">
+        <label>Person to invite</label>
+        <select class="form-select" id="invite-person-select">
+          <option value="">Select a person...</option>
+          {% for p in all_persons %}
+          <option value="{{ p.id }}">{{ p.display_name }} {% if p.branch %}({{ p.branch }}){% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn btn--primary btn--sm" onclick="createInvite()">Generate Invite Link</button>
+      <div id="invite-result" class="mt-8"></div>
+    </div>
+  </div>
+
+  <!-- Audit Log -->
+  <div class="card mb-16">
+    <div class="card__body">
+      <h2 style="font-size: 1rem; font-weight: 600; margin-bottom: 12px;">{{ t('admin.audit_log') }}</h2>
+      <div id="audit-log"
+           hx-get="/partials/audit-log"
+           hx-trigger="load"
+           hx-swap="innerHTML">
+        <div class="spinner" style="margin: 16px auto;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function triggerBackup() {
+  const resp = await fetch('/api/admin/backup', {method: 'POST'});
+  if (resp.ok) showToast('Backup created');
+  else showToast('Backup failed');
+}
+
+function downloadBackup() {
+  window.location.href = '/api/admin/backup/download';
+}
+
+async function approvePerson(id) {
+  const resp = await fetch('/api/admin/persons/' + id + '/approve', {method: 'POST'});
+  if (resp.ok) window.location.reload();
+}
+
+async function suspendPerson(id) {
+  if (!confirm('Suspend this person?')) return;
+  const resp = await fetch('/api/admin/persons/' + id + '/suspend', {method: 'POST'});
+  if (resp.ok) window.location.reload();
+}
+
+async function createInvite() {
+  const personId = document.getElementById('invite-person-select').value;
+  if (!personId) return showToast('Select a person first');
+  const resp = await fetch('/api/invites', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({person_id: personId})
+  });
+  const result = document.getElementById('invite-result');
+  if (resp.ok) {
+    const data = await resp.json();
+    const url = data.url || (window.location.origin + '/invite/' + data.token);
+    result.textContent = '';
+    const link = document.createElement('a');
+    link.href = url;
+    link.textContent = url;
+    link.style.cssText = 'word-break:break-all; color:var(--green-deep);';
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'padding:8px 12px; background:var(--green-pale); border-radius:6px; margin-top:8px;';
+    wrapper.appendChild(link);
+    result.appendChild(wrapper);
+  } else {
+    const err = await resp.json();
+    result.textContent = err.detail || 'Error';
+    result.style.color = 'var(--danger)';
+  }
+}
+</script>
+{% endblock %}

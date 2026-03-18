@@ -1,0 +1,24 @@
+<div class="people-grid">
+  {% for p in persons %}
+  <a href="/people/{{ p.id }}" class="person-card-sm">
+    <div class="avatar avatar--lg" style="margin:0 auto 8px;">
+      {% if p.photo_url %}
+      <img src="/api/media/{{ p.photo_url }}/file" alt="">
+      {% else %}
+      {{ p.display_name[:2] }}
+      {% endif %}
+    </div>
+    <span class="person-card-sm__name">{{ p.display_name }}</span>
+    {% if p.nickname %}<span class="text-sm text-muted">"{{ p.nickname }}"</span>{% endif %}
+    {% if p.branch %}<span class="person-card-sm__branch">{{ p.branch }}</span>{% endif %}
+    {% if p.residence_country_code %}
+    <span class="person-card-sm__country">{{ country_flag(p.residence_country_code) }}</span>
+    {% endif %}
+  </a>
+  {% endfor %}
+  {% if not persons %}
+  <div class="empty-state" style="grid-column: 1 / -1;">
+    <p class="empty-state__text">{{ t('common.no_results') }}</p>
+  </div>
+  {% endif %}
+</div>

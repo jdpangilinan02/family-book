@@ -1,0 +1,119 @@
+<div class="moment" id="moment-{{ m.id }}">
+  <div class="moment__header">
+    {% if m.poster %}
+    <a href="/people/{{ m.poster.id }}" class="avatar">
+      {% if m.poster.photo_url %}
+      <img src="/api/media/{{ m.poster.photo_url }}/file" alt="">
+      {% else %}
+      {{ m.poster.display_name[:2] }}
+      {% endif %}
+    </a>
+    <div class="moment__meta">
+      <a href="/people/{{ m.poster.id }}" class="moment__author">{{ m.poster.display_name }}</a>
+      <span class="moment__time">{{ m.occurred_at[:10] if m.occurred_at else '' }}
+        {% if m.source and m.source != 'manual' %}
+        <span class="moment__source">via {{ m.source | replace('_', ' ') | title }}</span>
+        {% endif %}
+      </span>
+    </div>
+    {% elif m.about %}
+    <a href="/people/{{ m.about.id }}" class="avatar">
+      {% if m.about.photo_url %}
+      <img src="/api/media/{{ m.about.photo_url }}/file" alt="">
+      {% else %}
+      {{ m.about.display_name[:2] }}
+      {% endif %}
+    </a>
+    <div class="moment__meta">
+      <a href="/people/{{ m.about.id }}" class="moment__author">{{ m.about.display_name }}</a>
+      <span class="moment__time">{{ m.occurred_at[:10] if m.occurred_at else '' }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if m.milestone_type %}
+  <div class="moment__milestone">
+    <div class="moment__milestone-icon">
+      {% if m.milestone_type == 'birthday' %}&#127874;{% elif m.milestone_type == 'marriage' %}&#128146;{% elif m.milestone_type == 'graduation' %}&#127891;{% elif m.milestone_type == 'birth' %}&#128118;{% elif m.milestone_type == 'death' %}&#128330;{% elif m.milestone_type == 'travel' %}&#9992;{% else %}&#11088;{% endif %}
+    </div>
+    <div class="moment__milestone-text">{{ m.title or m.body or '' }}</div>
+  </div>
+  {% endif %}
+
+  {% if m.media and m.media | length > 0 %}
+  <div class="moment__media">
+    {% if m.media | length == 1 %}
+    <img src="{{ m.media[0].url }}" alt="" loading="lazy" onclick="openLightbox('{{ m.media[0].url }}')">
+    {% elif m.media | length <= 4 %}
+    <div class="moment__media-grid moment__media-grid--{{ m.media | length }}">
+      {% for media in m.media %}
+      <img src="{{ media.url }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;"
+           onclick="openLightbox('{{ media.url }}')">
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="moment__media-grid moment__media-grid--4">
+      {% for media in m.media[:4] %}
+      <div style="position:relative;">
+        <img src="{{ media.url }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;"
+             onclick="openLightbox('{{ media.url }}')">
+        {% if loop.index == 4 and m.media | length > 4 %}
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;color:white;font-size:1.5rem;font-weight:600;">
+          +{{ m.media | length - 4 }}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if m.body and not m.milestone_type %}
+  <div class="moment__body">
+    <p>{{ m.body }}</p>
+  </div>
+  {% endif %}
+
+  <div class="moment__actions">
+    <div class="reactions">
+      {% for emoji, count in (m.reactions or {}).items() %}
+      <button class="reaction-btn {% if m.my_reaction == emoji %}reaction-btn--active{% endif %}"
+              hx-post="/api/moments/{{ m.id }}/reactions"
+              hx-vals='{"emoji": "{{ emoji }}"}'
+              hx-headers='{"Content-Type": "application/json"}'
+              hx-swap="none"
+              hx-on::after-request="this.querySelector('.reaction-btn__count').textContent=JSON.parse(event.detail.xhr.responseText).count">
+        {{ emoji }} <span class="reaction-btn__count">{{ count }}</span>
+      </button>
+      {% endfor %}
+      <button class="reaction-btn" onclick="toggleReactionPicker('{{ m.id }}')">+</button>
+    </div>
+
+    <div style="margin-left:auto;">
+      <button class="btn btn--ghost btn--sm"
+              onclick="toggleComments('{{ m.id }}')"
+              id="comment-toggle-{{ m.id }}">
+        &#128172; {{ m.comment_count or 0 }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Reaction picker (hidden) -->
+  <div class="reaction-picker hidden" id="reaction-picker-{{ m.id }}" style="margin:0 16px 12px;">
+    {% for emoji in ['❤️', '😂', '😢', '🎉', '🙏', '😮'] %}
+    <button hx-post="/api/moments/{{ m.id }}/reactions"
+            hx-vals='{"emoji": "{{ emoji }}"}'
+            hx-headers='{"Content-Type": "application/json"}'
+            hx-swap="none"
+            hx-on::after-request="window.location.reload()">{{ emoji }}</button>
+    {% endfor %}
+  </div>
+
+  <!-- Comments (lazy loaded) -->
+  <div class="comments hidden" id="comments-{{ m.id }}"
+       hx-get="/partials/comments/{{ m.id }}"
+       hx-trigger="toggle-comments-{{ m.id }}"
+       hx-swap="innerHTML">
+  </div>
+</div>

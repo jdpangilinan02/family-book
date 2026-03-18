@@ -1,10 +1,13 @@
+import logging
 import pytest
 from datetime import datetime, timedelta, timezone
+from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.person import Person, AccountState
 from app.models.auth import UserSession, Invite, MagicLinkToken
+from app.services import auth_service
 from app.services.auth_service import (
     create_session,
     validate_session,
@@ -105,15 +108,20 @@ async def test_invite_create_and_claim(seeded_db: AsyncSession):
     )
     await seeded_db.commit()
 
-    assert invite.token is not None
-    assert invite.claimed_at is None
+    raw_token = getattr(invite, "raw_token", None)
+    assert raw_token is not None
 
-    person = await claim_invite(seeded_db, invite.token)
+    result = await seeded_db.execute(select(Invite).where(Invite.id == invite.id))
+    stored_invite = result.scalar_one()
+    assert stored_invite.token == _hash_token(raw_token)
+    assert stored_invite.claimed_at is None
+
+    person = await claim_invite(seeded_db, raw_token)
     assert person is not None
     assert person.first_name == "Jane"
 
     # Can't claim twice
-    person2 = await claim_invite(seeded_db, invite.token)
+    person2 = await claim_invite(seeded_db, raw_token)
     assert person2 is None
 
 
@@ -127,8 +135,49 @@ async def test_expired_invite_rejected(seeded_db: AsyncSession):
     invite.expires_at = datetime.now(timezone.utc) - timedelta(hours=1)
     await seeded_db.commit()
 
-    person = await claim_invite(seeded_db, invite.token)
+    person = await claim_invite(seeded_db, getattr(invite, "raw_token"))
     assert person is None
+
+
+@pytest.mark.asyncio
+async def test_get_invite_route_accepts_raw_token_when_storage_is_hashed(
+    client: AsyncClient,
+    seeded_db: AsyncSession,
+):
+    invite = await create_invite(
+        seeded_db,
+        person_id="member-00-0000-0000-000000000005",
+        created_by="tyler-000-0000-0000-000000000002",
+    )
+    await seeded_db.commit()
+
+    resp = await client.get(f"/invite/{getattr(invite, 'raw_token')}")
+
+    assert resp.status_code == 200
+    assert resp.json()["person_name"] == "Jane Martin"
+
+
+@pytest.mark.asyncio
+async def test_magic_link_request_logs_only_redacted_token(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog,
+):
+    raw_token = "deadbeef" * 8
+    monkeypatch.setattr(auth_service, "generate_magic_link_token", lambda: raw_token)
+
+    with caplog.at_level(logging.INFO, logger="app.routes.auth_routes"):
+        resp = await client.post("/auth/magic-link", json={"email": "tyler@example.com"})
+
+    assert resp.status_code == 200
+    auth_logs = [
+        record.getMessage()
+        for record in caplog.records
+        if record.name == "app.routes.auth_routes"
+    ]
+    assert auth_logs
+    assert any(f"{raw_token[:8]}..." in message for message in auth_logs)
+    assert all(raw_token not in message for message in auth_logs)
 
 
 @pytest.mark.asyncio

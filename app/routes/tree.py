@@ -32,14 +32,25 @@ async def get_tree(
         select(Person).where(Person.visibility != Visibility.hidden.value)
     )
     persons = result.scalars().all()
+    visible_person_ids = {person.id for person in persons}
 
     # Get all parent-child relationships
     result = await db.execute(select(ParentChild))
-    parent_children = result.scalars().all()
+    parent_children = [
+        relationship
+        for relationship in result.scalars().all()
+        if relationship.parent_id in visible_person_ids
+        and relationship.child_id in visible_person_ids
+    ]
 
     # Get all partnerships
     result = await db.execute(select(Partnership))
-    partnerships = result.scalars().all()
+    partnerships = [
+        relationship
+        for relationship in result.scalars().all()
+        if relationship.person_a_id in visible_person_ids
+        and relationship.person_b_id in visible_person_ids
+    ]
 
     return TreeResponse(
         root_id=root_id,

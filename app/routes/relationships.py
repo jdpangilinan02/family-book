@@ -19,6 +19,51 @@ from app.services.audit_service import log_audit
 router = APIRouter(prefix="/api/relationships", tags=["relationships"])
 
 
+async def _would_create_ancestry_cycle(
+    db: AsyncSession,
+    parent_id: str,
+    child_id: str,
+) -> bool:
+    result = await db.execute(select(ParentChild.parent_id, ParentChild.child_id))
+    descendants_by_parent: dict[str, set[str]] = {}
+    for existing_parent_id, existing_child_id in result.all():
+        descendants_by_parent.setdefault(existing_parent_id, set()).add(existing_child_id)
+
+    stack = [child_id]
+    visited: set[str] = set()
+    while stack:
+        current_id = stack.pop()
+        if current_id == parent_id:
+            return True
+        if current_id in visited:
+            continue
+        visited.add(current_id)
+        stack.extend(descendants_by_parent.get(current_id, ()))
+
+    return False
+
+
+async def _partnership_exists(
+    db: AsyncSession,
+    person_a_id: str,
+    person_b_id: str,
+    kind: str,
+    start_date: str | None,
+) -> bool:
+    query = select(Partnership.id).where(
+        Partnership.person_a_id == person_a_id,
+        Partnership.person_b_id == person_b_id,
+        Partnership.kind == kind,
+    )
+    if start_date is None:
+        query = query.where(Partnership.start_date.is_(None))
+    else:
+        query = query.where(Partnership.start_date == start_date)
+
+    result = await db.execute(query.limit(1))
+    return result.scalar_one_or_none() is not None
+
+
 # --- ParentChild ---
 
 @router.post("/parent-child", response_model=ParentChildResponse, status_code=status.HTTP_201_CREATED)
@@ -35,6 +80,12 @@ async def create_parent_child(
         result = await db.execute(select(Person).where(Person.id == pid))
         if not result.scalar_one_or_none():
             raise HTTPException(status_code=404, detail=f"Person {pid} not found")
+
+    if await _would_create_ancestry_cycle(db, body.parent_id, body.child_id):
+        raise HTTPException(
+            status_code=409,
+            detail="This parent-child relationship would create an ancestry cycle",
+        )
 
     pc = ParentChild(
         parent_id=body.parent_id,
@@ -98,6 +149,9 @@ async def create_partnership(
         result = await db.execute(select(Person).where(Person.id == pid))
         if not result.scalar_one_or_none():
             raise HTTPException(status_code=404, detail=f"Person {pid} not found")
+
+    if await _partnership_exists(db, a_id, b_id, body.kind, body.start_date):
+        raise HTTPException(status_code=409, detail="This partnership already exists")
 
     partnership = Partnership(
         person_a_id=a_id,

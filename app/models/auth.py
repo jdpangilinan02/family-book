@@ -44,7 +44,7 @@ class Invite(Base):
     person_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("persons.id", ondelete="CASCADE")
     )
-    token: Mapped[str] = mapped_column(String(64), unique=True)
+    token: Mapped[str] = mapped_column(String(64), unique=True)  # SHA-256 of invite token
     created_by: Mapped[str] = mapped_column(String(36))
     claimed_at: Mapped[datetime | None] = mapped_column(default=None)
     expires_at: Mapped[datetime] = mapped_column()

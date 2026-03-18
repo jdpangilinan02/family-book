@@ -1,0 +1,29 @@
+{% if media_list %}
+<div class="media-gallery">
+  {% for m in media_list %}
+  <div class="media-gallery__item" onclick="openLightbox('/api/media/{{ m.id }}/file')">
+    <img src="/api/media/{{ m.id }}/thumbnail" alt="{{ m.caption or '' }}" loading="lazy"
+         onerror="this.src='/api/media/{{ m.id }}/file'">
+  </div>
+  {% endfor %}
+</div>
+
+{% if can_upload %}
+<div style="padding:0 16px 8px;">
+  <form id="media-upload-form" style="display:flex; gap:8px; align-items:center;">
+    <input type="file" id="media-upload-file" accept="image/*,video/*" style="font-size:0.85rem;">
+    <button type="button" class="btn btn--primary btn--sm" onclick="uploadMedia()">Upload</button>
+  </form>
+</div>
+{% endif %}
+{% else %}
+<div class="empty-state" style="padding:24px;">
+  <p class="text-sm text-muted">No media yet</p>
+  {% if can_upload %}
+  <form style="margin-top:12px; display:flex; gap:8px; align-items:center; justify-content:center;">
+    <input type="file" id="media-upload-file" accept="image/*,video/*" style="font-size:0.85rem;">
+    <button type="button" class="btn btn--primary btn--sm" onclick="uploadMedia()">Upload</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}

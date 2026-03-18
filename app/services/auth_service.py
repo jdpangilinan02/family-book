@@ -104,30 +104,38 @@ async def create_invite(
     person_id: str,
     created_by: str,
 ) -> Invite:
-    """Create an invite for a person. Returns the Invite with raw token."""
+    """Create an invite for a person. Returns the Invite with raw token on invite.raw_token."""
     token = generate_invite_token()
+    token_hash = _hash_token(token)
     invite = Invite(
         person_id=person_id,
-        token=token,
+        token=token_hash,
         created_by=created_by,
         expires_at=datetime.now(timezone.utc) + timedelta(days=INVITE_EXPIRY_DAYS),
     )
     db.add(invite)
     await db.flush()
+    invite.raw_token = token
     return invite
+
+
+async def get_valid_invite(db: AsyncSession, token: str) -> Invite | None:
+    token_hash = _hash_token(token)
+    now = datetime.now(timezone.utc)
+    result = await db.execute(
+        select(Invite).where(
+            Invite.token == token_hash,
+            Invite.claimed_at.is_(None),
+            Invite.revoked.is_(False),
+            Invite.expires_at > now,
+        )
+    )
+    return result.scalar_one_or_none()
 
 
 async def claim_invite(db: AsyncSession, token: str) -> Person | None:
     """Claim an invite token. Returns the Person if valid, None otherwise."""
-    result = await db.execute(
-        select(Invite).where(
-            Invite.token == token,
-            Invite.claimed_at.is_(None),
-            Invite.revoked == False,
-            Invite.expires_at > datetime.now(timezone.utc),
-        )
-    )
-    invite = result.scalar_one_or_none()
+    invite = await get_valid_invite(db, token)
     if not invite:
         return None
 
@@ -157,18 +165,27 @@ async def create_magic_link(db: AsyncSession, person_id: str) -> str:
 async def validate_magic_link(db: AsyncSession, token: str) -> Person | None:
     """Validate and consume a magic link token. Returns Person if valid."""
     token_hash = _hash_token(token)
+    now = datetime.now(timezone.utc)
     result = await db.execute(
         select(MagicLinkToken).where(
             MagicLinkToken.token_hash == token_hash,
             MagicLinkToken.used_at.is_(None),
-            MagicLinkToken.expires_at > datetime.now(timezone.utc),
+            MagicLinkToken.expires_at > now,
         )
     )
     ml = result.scalar_one_or_none()
     if not ml:
         return None
 
-    ml.used_at = datetime.now(timezone.utc)
+    result = await db.execute(
+        select(Person).where(
+            Person.id == ml.person_id,
+            Person.account_state == AccountState.active.value,
+        )
+    )
+    person = result.scalar_one_or_none()
+    if not person:
+        return None
 
-    result = await db.execute(select(Person).where(Person.id == ml.person_id))
-    return result.scalar_one_or_none()
+    ml.used_at = now
+    return person

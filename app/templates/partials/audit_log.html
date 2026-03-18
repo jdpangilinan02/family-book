@@ -1,0 +1,15 @@
+{% for entry in entries %}
+<div class="audit-row">
+  <span class="audit-row__action audit-row__action--{{ entry.action }}">{{ entry.action }}</span>
+  <div class="audit-row__detail">
+    <strong>{{ entry.entity_type }}</strong>
+    {% if entry.new_value %}
+    <span class="text-sm text-muted">{{ entry.new_value | tojson | truncate(60) }}</span>
+    {% endif %}
+  </div>
+  <span class="audit-row__time">{{ entry.created_at[:10] if entry.created_at else '' }}</span>
+</div>
+{% endfor %}
+{% if not entries %}
+<p class="text-sm text-muted">No audit log entries</p>
+{% endif %}

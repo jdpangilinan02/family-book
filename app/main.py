@@ -2,7 +2,9 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import HTTPException
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
@@ -57,6 +59,10 @@ def create_app() -> FastAPI:
     application.include_router(media_router)
     application.include_router(moments_router)
 
+    # HTML page routes (HTMX frontend)
+    from app.routes.pages import router as pages_router
+    application.include_router(pages_router)
+
     # Phase 3 routes (infrastructure)
     from app.backup.routes import router as backup_router
     from app.inbound.routes import router as inbound_router
@@ -64,6 +70,21 @@ def create_app() -> FastAPI:
     application.include_router(backup_router)
     application.include_router(inbound_router)
     application.include_router(pwa_router)
+
+    # 401 handler: redirect to /login for page routes, JSON for API routes
+    _API_PREFIXES = ("/api/", "/auth/", "/health", "/invite/")
+
+    @application.exception_handler(HTTPException)
+    async def http_exception_handler(request: Request, exc: HTTPException):
+        path = request.url.path
+        is_api = any(path.startswith(p) for p in _API_PREFIXES)
+        if exc.status_code == 401 and not is_api:
+            return RedirectResponse(f"/login?return_to={path}", status_code=302)
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.detail},
+        )
 
     # Security middleware
     from app.middleware.security import add_security_middleware

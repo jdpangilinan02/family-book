@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{{ t('person.add') }} — {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 16px;">
+  <div class="flex-between mb-16">
+    <h1 style="font-family: var(--font-serif); font-size: 1.3rem;">{{ t('person.add') }}</h1>
+    <a href="/people" class="btn btn--ghost btn--sm">{{ t('common.cancel') }}</a>
+  </div>
+
+  <form class="card" onsubmit="createPerson(event)">
+    <div class="card__body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{ t('person.first_name') }} *</label>
+          <input type="text" class="form-input" name="first_name" required>
+        </div>
+        <div class="form-group">
+          <label>{{ t('person.last_name') }} *</label>
+          <input type="text" class="form-input" name="last_name" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{ t('person.nickname') }}</label>
+          <input type="text" class="form-input" name="nickname">
+        </div>
+        <div class="form-group">
+          <label>{{ t('person.gender') }}</label>
+          <select class="form-select" name="gender">
+            <option value="">—</option>
+            <option value="male">{{ t('person.male') }}</option>
+            <option value="female">{{ t('person.female') }}</option>
+            <option value="other">{{ t('person.other') }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{ t('person.birth_date') }}</label>
+          <input type="text" class="form-input" name="birth_date_raw" placeholder="e.g. March 1985, ~1960">
+        </div>
+        <div class="form-group">
+          <label>Branch</label>
+          <input type="text" class="form-input" name="branch" placeholder="martin, semesock, maternal...">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>{{ t('person.birth_place') }}</label>
+          <input type="text" class="form-input" name="birth_place">
+        </div>
+        <div class="form-group">
+          <label>{{ t('person.residence') }}</label>
+          <input type="text" class="form-input" name="residence_place">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Residence Country</label>
+          <input type="text" class="form-input" name="residence_country_code" maxlength="2" placeholder="CA">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" class="form-input" name="contact_email">
+        </div>
+      </div>
+    </div>
+
+    <div class="card__footer" style="justify-content:flex-end;">
+      <a href="/people" class="btn btn--secondary">{{ t('common.cancel') }}</a>
+      <button type="submit" class="btn btn--primary" id="create-btn">{{ t('person.add') }}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function createPerson(e) {
+  e.preventDefault();
+  const btn = document.getElementById('create-btn');
+  btn.disabled = true;
+  const fd = new FormData(e.target);
+  const data = {};
+  for (const [k, v] of fd.entries()) {
+    if (v !== '') data[k] = v;
+  }
+  try {
+    const resp = await fetch('/api/persons', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+    if (resp.ok) {
+      const person = await resp.json();
+      window.location.href = '/people/' + person.id;
+    } else {
+      const err = await resp.json();
+      showToast(err.detail || '{{ t("common.error") }}');
+      btn.disabled = false;
+    }
+  } catch {
+    btn.disabled = false;
+  }
+}
+</script>
+{% endblock %}
