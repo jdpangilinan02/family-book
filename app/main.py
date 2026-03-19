@@ -71,6 +71,10 @@ def create_app() -> FastAPI:
     application.include_router(inbound_router)
     application.include_router(pwa_router)
 
+    # Demo mode — read-only walkthrough, no auth required
+    from app.routes.demo import router as demo_router
+    application.include_router(demo_router)
+
     # 401 handler: redirect to /login for page routes, JSON for API routes
     _API_PREFIXES = ("/api/", "/auth/", "/health", "/invite/")
 

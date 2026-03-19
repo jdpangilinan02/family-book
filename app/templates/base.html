@@ -13,7 +13,25 @@
   {% block head %}{% endblock %}
 </head>
 <body>
-  {% if current_user %}
+  {% if demo_mode %}
+  {# Demo mode navigation #}
+  <nav class="nav" id="main-nav">
+    <a href="/demo" class="nav__brand">{{ t('app.name') }} <span style="font-size:0.7em; opacity:0.7;">DEMO</span></a>
+    <div class="nav__links" id="nav-links">
+      <a href="/demo" class="nav__link {% if active_page == 'home' %}nav__link--active{% endif %}">{{ t('nav.moments') }}</a>
+      <a href="/demo/tree" class="nav__link {% if active_page == 'tree' %}nav__link--active{% endif %}">{{ t('nav.tree') }}</a>
+      <a href="/demo/people" class="nav__link {% if active_page == 'people' %}nav__link--active{% endif %}">{{ t('nav.people') }}</a>
+      <a href="/login" class="nav__link">{{ t('nav.login') }}</a>
+    </div>
+    <button class="nav__hamburger" onclick="toggleNav()" aria-label="Menu">&#9776;</button>
+  </nav>
+
+  {# Demo banner #}
+  <div class="demo-banner" id="demo-banner">
+    <span class="demo-banner__text">You're viewing the demo family. Create your own family to get started.</span>
+    <a href="/login" class="btn btn--primary btn--sm demo-banner__cta">Create Your Family</a>
+  </div>
+  {% elif current_user %}
   <nav class="nav" id="main-nav">
     <a href="/" class="nav__brand">{{ t('app.name') }}</a>
     <div class="nav__links" id="nav-links">

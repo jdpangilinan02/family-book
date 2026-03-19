@@ -5,7 +5,7 @@
 <div class="container" style="padding-top: 16px;">
   <div class="flex-between mb-16">
     <h1 style="font-family: var(--font-serif); font-size: 1.3rem;">{{ t('nav.people') }}</h1>
-    {% if current_user.is_admin %}
+    {% if current_user and current_user.is_admin %}
     <a href="/admin/people/new" class="btn btn--primary btn--sm">+ {{ t('person.add') }}</a>
     {% endif %}
   </div>
@@ -13,7 +13,7 @@
   <div class="search-bar">
     <span class="search-bar__icon">&#128269;</span>
     <input type="search" placeholder="{{ t('common.search') }}..."
-           hx-get="/partials/people-grid"
+           hx-get="{{ url_prefix }}/partials/people-grid"
            hx-trigger="keyup changed delay:300ms"
            hx-target="#people-results"
            name="search"
@@ -22,10 +22,10 @@
 
   <div class="filter-bar">
     {% for b in branches %}
-    <a href="?branch={{ b }}" class="filter-chip {% if branch_filter == b %}filter-chip--active{% endif %}" style="text-transform:capitalize;">{{ b }}</a>
+    <a href="{{ url_prefix }}/people?branch={{ b }}" class="filter-chip {% if branch_filter == b %}filter-chip--active{% endif %}" style="text-transform:capitalize;">{{ b }}</a>
     {% endfor %}
     {% if branch_filter %}
-    <a href="/people" class="filter-chip">&times; Clear</a>
+    <a href="{{ url_prefix }}/people" class="filter-chip">&times; Clear</a>
     {% endif %}
   </div>
 

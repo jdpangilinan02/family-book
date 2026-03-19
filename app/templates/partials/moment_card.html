@@ -1,7 +1,7 @@
 <div class="moment" id="moment-{{ m.id }}">
   <div class="moment__header">
     {% if m.poster %}
-    <a href="/people/{{ m.poster.id }}" class="avatar">
+    <a href="{{ url_prefix }}/people/{{ m.poster.id }}" class="avatar">
       {% if m.poster.photo_url %}
       <img src="/api/media/{{ m.poster.photo_url }}/file" alt="">
       {% else %}
@@ -9,7 +9,7 @@
       {% endif %}
     </a>
     <div class="moment__meta">
-      <a href="/people/{{ m.poster.id }}" class="moment__author">{{ m.poster.display_name }}</a>
+      <a href="{{ url_prefix }}/people/{{ m.poster.id }}" class="moment__author">{{ m.poster.display_name }}</a>
       <span class="moment__time">{{ m.occurred_at[:10] if m.occurred_at else '' }}
         {% if m.source and m.source != 'manual' %}
         <span class="moment__source">via {{ m.source | replace('_', ' ') | title }}</span>
@@ -17,7 +17,7 @@
       </span>
     </div>
     {% elif m.about %}
-    <a href="/people/{{ m.about.id }}" class="avatar">
+    <a href="{{ url_prefix }}/people/{{ m.about.id }}" class="avatar">
       {% if m.about.photo_url %}
       <img src="/api/media/{{ m.about.photo_url }}/file" alt="">
       {% else %}
@@ -25,7 +25,7 @@
       {% endif %}
     </a>
     <div class="moment__meta">
-      <a href="/people/{{ m.about.id }}" class="moment__author">{{ m.about.display_name }}</a>
+      <a href="{{ url_prefix }}/people/{{ m.about.id }}" class="moment__author">{{ m.about.display_name }}</a>
       <span class="moment__time">{{ m.occurred_at[:10] if m.occurred_at else '' }}</span>
     </div>
     {% endif %}
@@ -75,6 +75,7 @@
   </div>
   {% endif %}
 
+  {% if not demo_mode %}
   <div class="moment__actions">
     <div class="reactions">
       {% for emoji, count in (m.reactions or {}).items() %}
@@ -112,8 +113,25 @@
 
   <!-- Comments (lazy loaded) -->
   <div class="comments hidden" id="comments-{{ m.id }}"
-       hx-get="/partials/comments/{{ m.id }}"
+       hx-get="{{ url_prefix }}/partials/comments/{{ m.id }}"
        hx-trigger="toggle-comments-{{ m.id }}"
        hx-swap="innerHTML">
   </div>
+  {% else %}
+  {# Demo mode: show read-only reactions and comment count #}
+  <div class="moment__actions">
+    <div class="reactions">
+      {% for emoji, count in (m.reactions or {}).items() %}
+      <span class="reaction-btn" style="cursor:default;">
+        {{ emoji }} <span class="reaction-btn__count">{{ count }}</span>
+      </span>
+      {% endfor %}
+    </div>
+    <div style="margin-left:auto;">
+      <span class="btn btn--ghost btn--sm" style="cursor:default;">
+        &#128172; {{ m.comment_count or 0 }}
+      </span>
+    </div>
+  </div>
+  {% endif %}
 </div>

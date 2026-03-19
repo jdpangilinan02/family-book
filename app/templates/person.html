@@ -25,7 +25,7 @@
     <span>{{ t('person.deceased') }}</span>
     {% endif %}
   </div>
-  {% if can_edit %}
+  {% if can_edit and not demo_mode %}
   <div style="margin-top: 12px;">
     <a href="/people/{{ person.id }}/edit" class="btn btn--sm" style="background:rgba(255,255,255,0.2); color:white;">{{ t('person.edit') }}</a>
   </div>
@@ -47,7 +47,8 @@
   </div>
   {% endif %}
 
-  <!-- Contact buttons -->
+  <!-- Contact buttons (hidden in demo mode) -->
+  {% if not demo_mode %}
   {% if person.contact_whatsapp or person.contact_telegram or person.contact_signal or person.contact_email %}
   <div class="profile-section">
     <h3 class="profile-section__title">{{ t('person.contact') }}</h3>
@@ -67,13 +68,14 @@
     </div>
   </div>
   {% endif %}
+  {% endif %}
 
   <!-- Relationships -->
   <div class="profile-section" id="relationships-section">
     <h3 class="profile-section__title">{{ t('relationships.parents') }}</h3>
     <div class="rel-chips mb-8">
       {% for p in parents %}
-      <a href="/people/{{ p.id }}" class="rel-chip">{{ p.display_name }}</a>
+      <a href="{{ url_prefix }}/people/{{ p.id }}" class="rel-chip">{{ p.display_name }}</a>
       {% endfor %}
       {% if not parents %}<span class="text-muted text-sm">None listed</span>{% endif %}
     </div>
@@ -81,7 +83,7 @@
     <h3 class="profile-section__title mt-16">{{ t('relationships.partners') }}</h3>
     <div class="rel-chips mb-8">
       {% for p in partners %}
-      <a href="/people/{{ p.id }}" class="rel-chip">{{ p.display_name }}</a>
+      <a href="{{ url_prefix }}/people/{{ p.id }}" class="rel-chip">{{ p.display_name }}</a>
       {% endfor %}
       {% if not partners %}<span class="text-muted text-sm">None listed</span>{% endif %}
     </div>
@@ -89,7 +91,7 @@
     <h3 class="profile-section__title mt-16">{{ t('relationships.children') }}</h3>
     <div class="rel-chips mb-8">
       {% for c in children %}
-      <a href="/people/{{ c.id }}" class="rel-chip">{{ c.display_name }}</a>
+      <a href="{{ url_prefix }}/people/{{ c.id }}" class="rel-chip">{{ c.display_name }}</a>
       {% endfor %}
       {% if not children %}<span class="text-muted text-sm">None listed</span>{% endif %}
     </div>
@@ -97,7 +99,7 @@
     <h3 class="profile-section__title mt-16">{{ t('relationships.siblings') }}</h3>
     <div class="rel-chips mb-8">
       {% for s in siblings %}
-      <a href="/people/{{ s.id }}" class="rel-chip">{{ s.display_name }}</a>
+      <a href="{{ url_prefix }}/people/{{ s.id }}" class="rel-chip">{{ s.display_name }}</a>
       {% endfor %}
       {% if not siblings %}<span class="text-muted text-sm">None listed</span>{% endif %}
     </div>
@@ -107,7 +109,7 @@
   <div class="profile-section">
     <h3 class="profile-section__title">Photos &amp; Media</h3>
     <div id="person-media"
-         hx-get="/partials/media-gallery?person_id={{ person.id }}"
+         hx-get="{{ url_prefix }}/partials/media-gallery?person_id={{ person.id }}"
          hx-trigger="load"
          hx-swap="innerHTML">
       <div class="spinner" style="margin: 16px auto;"></div>
@@ -118,7 +120,7 @@
   <div class="profile-section">
     <h3 class="profile-section__title">{{ t('nav.moments') }}</h3>
     <div id="person-moments"
-         hx-get="/partials/moments?person={{ person.id }}"
+         hx-get="{{ url_prefix }}/partials/moments?person={{ person.id }}"
          hx-trigger="load"
          hx-swap="innerHTML">
       <div class="spinner" style="margin: 16px auto;"></div>

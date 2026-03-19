@@ -19,6 +19,14 @@
     <div id="sidebar-content"></div>
   </div>
 </div>
+{# Pass config to tree.js #}
+<script>
+  window.TREE_CONFIG = {
+    apiUrl: '{{ "/demo/api/tree" if demo_mode else "/api/tree" }}',
+    personBaseUrl: '{{ "/demo/people" if demo_mode else "/people" }}',
+    demoMode: {{ "true" if demo_mode else "false" }}
+  };
+</script>
 {% endblock %}
 
 {% block scripts %}

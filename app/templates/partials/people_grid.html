@@ -1,6 +1,6 @@
 <div class="people-grid">
   {% for p in persons %}
-  <a href="/people/{{ p.id }}" class="person-card-sm">
+  <a href="{{ url_prefix }}/people/{{ p.id }}" class="person-card-sm">
     <div class="avatar avatar--lg" style="margin:0 auto 8px;">
       {% if p.photo_url %}
       <img src="/api/media/{{ p.photo_url }}/file" alt="">

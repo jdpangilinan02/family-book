@@ -24,6 +24,7 @@
 </div>
 {% endif %}
 
+{% if not demo_mode %}
 {% if person.contact_whatsapp or person.contact_telegram or person.contact_email %}
 <div style="padding: 0 16px 16px;">
   <div class="contact-btns">
@@ -39,7 +40,8 @@
   </div>
 </div>
 {% endif %}
+{% endif %}
 
 <div style="padding: 0 16px 16px; text-align:center;">
-  <a href="/people/{{ person.id }}" class="btn btn--primary btn--sm btn--block">View Full Profile</a>
+  <a href="{{ url_prefix }}/people/{{ person.id }}" class="btn btn--primary btn--sm btn--block">View Full Profile</a>
 </div>

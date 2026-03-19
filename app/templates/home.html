@@ -24,18 +24,20 @@
     <div class="empty-state">
       <div class="empty-state__icon">&#128247;</div>
       <p class="empty-state__text">{{ t('moments.no_moments') }}</p>
+      {% if not demo_mode %}
       <div class="empty-state__action">
         <button class="btn btn--primary" onclick="document.getElementById('compose-input').focus()">
           {{ t('moments.new') }}
         </button>
       </div>
+      {% endif %}
     </div>
     {% endif %}
   </div>
 
   {% if moments and moments|length >= 20 %}
   <div id="load-more"
-       hx-get="/partials/moments?before={{ moments[-1].id }}"
+       hx-get="{{ url_prefix }}/partials/moments?before={{ moments[-1].id }}"
        hx-trigger="revealed"
        hx-swap="afterend"
        hx-indicator="#load-more-spinner">
@@ -48,6 +50,7 @@
   <div class="feed-spacer"></div>
 </div>
 
+{% if not demo_mode %}
 <!-- Compose bar -->
 <div class="compose-bar" id="compose-bar">
   <label class="compose-bar__photo-btn" for="compose-file">&#128247;</label>
@@ -79,16 +82,21 @@
     </form>
   </div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
 <script>
-const COMPOSE_FILES = [];
+var URL_PREFIX = '{{ url_prefix }}';
 
 function filterMoments(kind) {
-  const url = kind ? '/?kind=' + kind : '/';
+  var base = URL_PREFIX || '';
+  var url = kind ? base + '/?kind=' + kind : base + '/';
   window.location.href = url;
 }
+
+{% if not demo_mode %}
+const COMPOSE_FILES = [];
 
 function handleComposeFile(input) {
   COMPOSE_FILES.length = 0;
@@ -171,5 +179,6 @@ async function submitMomentWithMedia(e) {
     btn.textContent = '{{ t("moments.share") }}';
   }
 }
+{% endif %}
 </script>
 {% endblock %}

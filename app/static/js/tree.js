@@ -8,10 +8,16 @@
   var NODE_SPACING_X = 100;
   var NODE_SPACING_Y = 140;
 
+  // Read config from template (supports demo mode)
+  var config = window.TREE_CONFIG || {};
+  var API_URL = config.apiUrl || '/api/tree';
+  var PERSON_BASE_URL = config.personBaseUrl || '/people';
+  var IS_DEMO = config.demoMode || false;
+
   // Fetch tree data and render
   async function init() {
     try {
-      var resp = await fetch('/api/tree');
+      var resp = await fetch(API_URL);
       if (resp.status === 401) {
         window.location.href = '/login';
         return;
@@ -244,7 +250,7 @@
 
       // Double-click — navigate to profile
       nodeG.on('dblclick', function() {
-        window.location.href = '/people/' + person.id;
+        window.location.href = PERSON_BASE_URL + '/' + person.id;
       });
     });
 
@@ -263,7 +269,7 @@
     var content = document.getElementById('sidebar-content');
     sidebar.classList.add('person-sidebar--open');
     // Use HTMX to safely load server-rendered HTML
-    htmx.ajax('GET', '/people/' + personId + '/card', {target: '#sidebar-content', swap: 'innerHTML'});
+    htmx.ajax('GET', PERSON_BASE_URL + '/' + personId + '/card', {target: '#sidebar-content', swap: 'innerHTML'});
   }
 
   // Country code to flag emoji

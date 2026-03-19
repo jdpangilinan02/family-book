@@ -46,6 +46,8 @@ def _ctx(request: Request, current_user: Person | None = None, **kwargs):
     return {
         "request": request,
         "current_user": current_user,
+        "demo_mode": False,
+        "url_prefix": "",
         "locale": locale,
         "t": lambda key: translate(key, locale),
         "country_flag": _country_flag,
