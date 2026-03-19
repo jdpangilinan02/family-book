@@ -1,7 +1,7 @@
 # Family Book — Outreach Targets
 
 > **Prepared:** 2026-03-19
-> **Status:** DRAFT — For Tyler to review and post manually
+> **Status:** DRAFT — For Alex to review and post manually
 > **Rule:** Be genuinely useful. No spam. Only comment where Family Book adds real value to the conversation.
 
 ---

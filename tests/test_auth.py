@@ -24,14 +24,14 @@ from app.services.auth_service import (
 async def test_create_and_validate_session(seeded_db: AsyncSession):
     token = await create_session(
         seeded_db,
-        person_id="tyler-000-0000-0000-000000000002",
+        person_id="alex-000-0000-0000-000000000002",
         auth_method="magic_link",
     )
     await seeded_db.commit()
 
     person = await validate_session(seeded_db, token)
     assert person is not None
-    assert person.first_name == "Tyler"
+    assert person.first_name == "Alex"
 
 
 @pytest.mark.asyncio
@@ -44,7 +44,7 @@ async def test_invalid_session_returns_none(seeded_db: AsyncSession):
 async def test_delete_session(seeded_db: AsyncSession):
     token = await create_session(
         seeded_db,
-        person_id="tyler-000-0000-0000-000000000002",
+        person_id="alex-000-0000-0000-000000000002",
         auth_method="magic_link",
     )
     await seeded_db.commit()
@@ -60,7 +60,7 @@ async def test_delete_session(seeded_db: AsyncSession):
 async def test_expired_session_rejected(seeded_db: AsyncSession):
     token = await create_session(
         seeded_db,
-        person_id="tyler-000-0000-0000-000000000002",
+        person_id="alex-000-0000-0000-000000000002",
         auth_method="magic_link",
     )
     await seeded_db.commit()
@@ -80,17 +80,17 @@ async def test_expired_session_rejected(seeded_db: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_suspended_user_session_rejected(seeded_db: AsyncSession):
-    # Suspend Tyler
+    # Suspend Alex
     result = await seeded_db.execute(
-        select(Person).where(Person.id == "tyler-000-0000-0000-000000000002")
+        select(Person).where(Person.id == "alex-000-0000-0000-000000000002")
     )
-    tyler = result.scalar_one()
-    tyler.account_state = AccountState.suspended.value
+    alex = result.scalar_one()
+    alex.account_state = AccountState.suspended.value
     await seeded_db.commit()
 
     token = await create_session(
         seeded_db,
-        person_id="tyler-000-0000-0000-000000000002",
+        person_id="alex-000-0000-0000-000000000002",
         auth_method="magic_link",
     )
     await seeded_db.commit()
@@ -104,7 +104,7 @@ async def test_invite_create_and_claim(seeded_db: AsyncSession):
     invite = await create_invite(
         seeded_db,
         person_id="member-00-0000-0000-000000000005",
-        created_by="tyler-000-0000-0000-000000000002",
+        created_by="alex-000-0000-0000-000000000002",
     )
     await seeded_db.commit()
 
@@ -130,7 +130,7 @@ async def test_expired_invite_rejected(seeded_db: AsyncSession):
     invite = await create_invite(
         seeded_db,
         person_id="member-00-0000-0000-000000000005",
-        created_by="tyler-000-0000-0000-000000000002",
+        created_by="alex-000-0000-0000-000000000002",
     )
     invite.expires_at = datetime.now(timezone.utc) - timedelta(hours=1)
     await seeded_db.commit()
@@ -147,14 +147,14 @@ async def test_get_invite_route_accepts_raw_token_when_storage_is_hashed(
     invite = await create_invite(
         seeded_db,
         person_id="member-00-0000-0000-000000000005",
-        created_by="tyler-000-0000-0000-000000000002",
+        created_by="alex-000-0000-0000-000000000002",
     )
     await seeded_db.commit()
 
     resp = await client.get(f"/invite/{getattr(invite, 'raw_token')}")
 
     assert resp.status_code == 200
-    assert resp.json()["person_name"] == "Jane Martin"
+    assert resp.json()["person_name"] == "Jane Rivera"
 
 
 @pytest.mark.asyncio
@@ -167,7 +167,7 @@ async def test_magic_link_request_logs_only_redacted_token(
     monkeypatch.setattr(auth_service, "generate_magic_link_token", lambda: raw_token)
 
     with caplog.at_level(logging.INFO, logger="app.routes.auth_routes"):
-        resp = await client.post("/auth/magic-link", json={"email": "tyler@example.com"})
+        resp = await client.post("/auth/magic-link", json={"email": "alex@example.com"})
 
     assert resp.status_code == 200
     auth_logs = [
@@ -182,12 +182,12 @@ async def test_magic_link_request_logs_only_redacted_token(
 
 @pytest.mark.asyncio
 async def test_magic_link_create_and_validate(seeded_db: AsyncSession):
-    token = await create_magic_link(seeded_db, "tyler-000-0000-0000-000000000002")
+    token = await create_magic_link(seeded_db, "alex-000-0000-0000-000000000002")
     await seeded_db.commit()
 
     person = await validate_magic_link(seeded_db, token)
     assert person is not None
-    assert person.first_name == "Tyler"
+    assert person.first_name == "Alex"
 
     # Can't use twice
     person2 = await validate_magic_link(seeded_db, token)
@@ -196,7 +196,7 @@ async def test_magic_link_create_and_validate(seeded_db: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_expired_magic_link_rejected(seeded_db: AsyncSession):
-    token = await create_magic_link(seeded_db, "tyler-000-0000-0000-000000000002")
+    token = await create_magic_link(seeded_db, "alex-000-0000-0000-000000000002")
     await seeded_db.commit()
 
     # Expire the token

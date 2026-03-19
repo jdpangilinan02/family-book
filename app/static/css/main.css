@@ -437,8 +437,8 @@ h1, h2, h3, h4 { line-height: 1.25; }
   pointer-events: none;
 }
 .person-node:hover circle.photo-clip { stroke: var(--green-mid); stroke-width: 2.5; }
-.person-node--branch-martin circle.photo-clip { fill: #dce8d4; }
-.person-node--branch-semesock circle.photo-clip { fill: #d4dce8; }
+.person-node--branch-rivera circle.photo-clip { fill: #dce8d4; }
+.person-node--branch-santos circle.photo-clip { fill: #d4dce8; }
 .person-node--branch-maternal circle.photo-clip { fill: #e8d4dc; }
 
 .partnership-line { stroke: var(--brown-light); stroke-width: 2; fill: none; }

@@ -24,8 +24,8 @@ async def test_person_creation_minimal(db: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_person_display_name_western(db: AsyncSession):
-    person = Person(first_name="Tyler", last_name="Martin")
-    assert person.display_name == "Tyler Martin"
+    person = Person(first_name="Alex", last_name="Rivera")
+    assert person.display_name == "Alex Rivera"
 
 
 @pytest.mark.asyncio

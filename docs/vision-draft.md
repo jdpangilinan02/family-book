@@ -6,7 +6,7 @@ Not a family tree app. Not a genealogy tool. Not a private social network.
 
 **Family Book is the family's living room — digital, sovereign, and permanent.**
 
-It's the coffee table photo album that never gets lost in a move. It's the wall of framed photos at grandma's house, except grandma is in Moscow and the photos update themselves. It's the place where Tyler's daughter — at 4, at 14, at 40 — can open a single page and see every face, every name, every story, every connection that makes her who she is.
+It's the coffee table photo album that never gets lost in a move. It's the wall of framed photos at grandma's house, except grandma is in Tokyo and the photos update themselves. It's the place where Alex's daughter — at 4, at 14, at 40 — can open a single page and see every face, every name, every story, every connection that makes her who she is.
 
 The tree is the skeleton. The life is everything else.
 
@@ -20,12 +20,12 @@ Family Book stays alive because **life keeps happening:**
 
 The beating heart is **Moments** — a reverse-chronological feed of family life, scoped by relationship and geography.
 
-- Luna took her first steps (video, 12 seconds, Tyler uploaded)
-- Бабушка Наташа made pelmeni with Дедушка (photo, Moscow)
+- Mia took her first steps (video, 12 seconds, Alex uploaded)
+- Бабушка Юки made pelmeni with Дедушка (photo, Tokyo)
 - Cousin Dmitri graduated university (photo + note, Calgary)
-- Tía María's new puppy (photo, Madrid)
-- Uncle Mike caught a fish THIS BIG (photo, Vancouver Island)
-- Baby announcement: Tyler's sister is expecting (milestone)
+- Tía María's new puppy (photo, Barcelona)
+- Uncle Mike caught a fish THIS BIG (photo, Portland Island)
+- Baby announcement: Alex's sister is expecting (milestone)
 - Memorial: Дедушка Борис passed away, January 12 (memorial, photo gallery of his life)
 
 **This is what Facebook does well.** The feed. The ambient awareness of family life. The "oh, cousin Sasha is in Barcelona this week!" serendipity.
@@ -59,14 +59,14 @@ Milestones are the structural events that shape the tree AND generate Moments:
 
 ### The Value Proposition Per Audience
 
-**For Tyler's daughter (4 now, 14 later, 40 eventually):**
+**For Alex's daughter (4 now, 14 later, 40 eventually):**
 - At 4: Tap faces, see names, hear "that's your бабушка in Russia!"
 - At 14: Scroll the Moments feed, see family across three countries, feel connected to cousins she's met twice
 - At 40: The complete archive. Every photo, every milestone, every face. The thing she'll show HER kids.
 - **What Facebook can't do:** Facebook wasn't designed to last 40 years. Accounts get deleted, policies change, photos get compressed, memories get algorithmed. Family Book is a sovereign archive.
 
-**For Бабушка Наташа (Moscow):**
-- Opens Family Book on her phone, sees yesterday's photo of her granddaughter at the park in Madrid
+**For Бабушка Юки (Tokyo):**
+- Opens Family Book on her phone, sees yesterday's photo of her granddaughter at the park in Barcelona
 - Doesn't need Facebook. Doesn't need Instagram. Doesn't need to understand Telegram channels.
 - One website. In Russian. With her granddaughter's face.
 - **Why she'll actually use it:** New photos of the kids. That's it. That's the killer feature for grandparents.
@@ -77,9 +77,9 @@ Milestones are the structural events that shape the tree AND generate Moments:
 - Discovers his second cousin in Spain is also into skiing
 - **Why he'll actually use it:** The tree gives him context. The Moments give him connection.
 
-**For Tyler and Yuliya (admins):**
+**For Alex and Maria (admins):**
 - Single place to share kid photos that ISN'T Meta's servers
-- Extended family stays connected without Tyler being the human router
+- Extended family stays connected without Alex being the human router
 - The family archive survives any platform's business model changes
 - **Why they'll maintain it:** It replaces 4-5 WhatsApp groups, a Facebook account they don't want, and the anxiety of "are these photos backed up?"
 
@@ -89,16 +89,16 @@ Milestones are the structural events that shape the tree AND generate Moments:
 **Role:** The notification backbone. Every family member on Earth can receive a text message.
 
 **Why SMS wins:**
-- Бабушка in Moscow has SMS. Aunt Shelley in Calgary has SMS. Every phone everywhere has SMS.
+- Бабушка in Tokyo has SMS. Aunt Amy in Calgary has SMS. Every phone everywhere has SMS.
 - No app to install. No bot to add. No API pricing games.
 - iMessage, SMS, WhatsApp — families already share baby photos through these channels because they *feel* sovereign and private. Family Book should feel the same way.
 - MMS supports photos directly in the message — grandma sees the baby photo in her texts without tapping a link.
 
 **Integration:**
-- **Outbound notifications:** SMS with a deep link to the latest Moments. "3 new photos from Tyler! → martin.fm/moments"
+- **Outbound notifications:** SMS with a deep link to the latest Moments. "3 new photos from Alex! → family.example.com/moments"
 - **MMS option:** For milestone photos (first steps, birthdays), send the photo directly as MMS. Бабушка sees it without opening a browser.
-- **Birthday reminders:** SMS: "Дядя Саша's birthday is tomorrow! 🎂 → martin.fm/people/uuid"
-- **Weekly digest:** SMS: "This week in your family: 5 new photos, Dmitri graduated! → martin.fm/moments"
+- **Birthday reminders:** SMS: "Дядя Саша's birthday is tomorrow! 🎂 → family.example.com/people/uuid"
+- **Weekly digest:** SMS: "This week in your family: 5 new photos, Dmitri graduated! → family.example.com/moments"
 - **Inbound (future):** Reply with a photo → it gets added to Moments (requires MMS ingestion pipeline, Phase 3+)
 
 **Implementation:**
@@ -115,7 +115,7 @@ Milestones are the structural events that shape the tree AND generate Moments:
 **Reality:** Most close families already have a WhatsApp group. Baby photos, travel updates, birthday wishes — they're all there already. Family Book doesn't need to replace this or automate it.
 
 **Integration (light touch):**
-- **Manual bridge:** Tyler (or any admin) shares Family Book links in the family WhatsApp group: "New photos up! → martin.fm/moments"
+- **Manual bridge:** Alex (or any admin) shares Family Book links in the family WhatsApp group: "New photos up! → family.example.com/moments"
 - **Profile photo sync:** wacli can passively pull profile photos (low-risk, personal account automation)
 - **No bot, no Business API, no automation.** WhatsApp is the existing family channel. Family Book is the archive. They complement each other without needing an API bridge.
 - **Data export:** WhatsApp chat export (built-in feature) can be ingested by Family Book for historical photo recovery (Phase 3)
@@ -129,7 +129,7 @@ Milestones are the structural events that shape the tree AND generate Moments:
 - **Magic link auth:** Primary login method for family members who don't use Facebook
 - **Facebook data export:** Forward the Facebook download email → Envelope parses and stages
 - **Milestone notifications:** Weekly digest email: "This week in your family: 3 new photos, Dmitri's birthday tomorrow"
-- **Photo ingestion:** Email photos to family@martin.fm → auto-attached to sender's Person record
+- **Photo ingestion:** Email photos to family@family.example.com → auto-attached to sender's Person record
 - **Why it fits:** Email is universal. Every family member has it. Zero onboarding friction for notifications.
 
 ### Facebook (reluctant but necessary)
@@ -185,7 +185,7 @@ Milestones are the structural events that shape the tree AND generate Moments:
 **Role:** Federated family presence for the post-platform future.
 
 **Integration:**
-- **GoToSocial instance** on `social.martin.fm` (lightweight, single-user instance is fine)
+- **GoToSocial instance** on `social.family.example.com` (lightweight, single-user instance is fine)
 - **Moments → posts:** Family Moments (with appropriate visibility) cross-post to the fediverse
 - **Follow from anywhere:** Family members with Mastodon/Pixelfed accounts follow the family instance
 - **Federation between Family Books:** When two families connect, their GoToSocial instances federate naturally
@@ -221,11 +221,11 @@ Milestones are the structural events that shape the tree AND generate Moments:
 
 ## Data Sovereignty — The Real Pitch
 
-Here's what Tyler is actually building, even if he hasn't said it this way yet:
+Here's what Alex is actually building, even if he hasn't said it this way yet:
 
 **Family Book is a data sovereignty platform for families.**
 
-Every photo Tyler's daughter has ever taken. Every video of her first steps. Every picture of Бабушка making pelmeni. Every shot from the family trip to Navacerrada. All of this currently lives on:
+Every photo Alex's daughter has ever taken. Every video of her first steps. Every picture of Бабушка making pelmeni. Every shot from the family trip to Navacerrada. All of this currently lives on:
 - Meta's servers (Facebook, Instagram, WhatsApp)
 - ByteDance's servers (TikTok)
 - Apple's servers (iCloud)
@@ -280,14 +280,14 @@ Family Book breaks this with three content loops:
 
 Close your eyes. It's 2066.
 
-Tyler's daughter is 45. She has kids of her own. Tyler is 84.
+Alex's daughter is 45. She has kids of her own. Alex is 84.
 
 She opens Family Book on whatever device exists in 2066. She sees:
-- Her great-grandmother Наташа, who she barely remembers, smiling in a kitchen in Moscow
+- Her great-grandmother Юки, who she barely remembers, smiling in a kitchen in Tokyo
 - The video of her own first steps, uploaded when she was 1
 - Her dad's handwritten (typed, but still) bio from when he was 44 and building this thing
 - Her wedding photos, imported from whatever platform existed in 2048
-- Her children's faces, uploaded yesterday by their grandmother Yuliya
+- Her children's faces, uploaded yesterday by their grandmother Maria
 - The complete graph of who she is, where she came from, and who loves her
 
 Facebook won't exist in 2066. Instagram won't exist in 2066. Family Book — or its SQLite backup — will.

@@ -65,7 +65,7 @@ async def db(session_factory):
 
 @pytest_asyncio.fixture
 async def seeded_db(db: AsyncSession):
-    """Database with root person, Tyler (admin), and Yuliya (admin)."""
+    """Database with root person, Alex (admin), and Maria (admin)."""
     root = Person(
         id="root-0000-0000-0000-000000000001",
         first_name="Our",
@@ -75,26 +75,26 @@ async def seeded_db(db: AsyncSession):
         source=PersonSource.manual.value,
         account_state=AccountState.active.value,
     )
-    tyler = Person(
-        id="tyler-000-0000-0000-000000000002",
-        first_name="Tyler",
-        last_name="Martin",
+    alex = Person(
+        id="alex-000-0000-0000-000000000002",
+        first_name="Alex",
+        last_name="Rivera",
         gender="male",
         residence_country_code="ES",
-        branch="martin",
+        branch="rivera",
         is_admin=True,
         is_root=False,
-        contact_email="tyler@example.com",
+        contact_email="alex@example.com",
         source=PersonSource.manual.value,
         account_state=AccountState.active.value,
     )
-    yuliya = Person(
-        id="yuliya-00-0000-0000-000000000003",
-        first_name="Yuliya",
-        last_name="Semesock",
+    maria = Person(
+        id="maria-00-0000-0000-000000000003",
+        first_name="Maria",
+        last_name="Santos",
         gender="female",
         residence_country_code="ES",
-        branch="yuliya",
+        branch="maria",
         is_admin=True,
         is_root=False,
         source=PersonSource.manual.value,
@@ -102,11 +102,11 @@ async def seeded_db(db: AsyncSession):
     )
     grandpa = Person(
         id="grndpa-00-0000-0000-000000000004",
-        first_name="Robert",
-        last_name="Martin",
+        first_name="James",
+        last_name="Rivera",
         gender="male",
         residence_country_code="CA",
-        branch="martin",
+        branch="rivera",
         is_admin=False,
         source=PersonSource.manual.value,
         account_state=AccountState.active.value,
@@ -114,26 +114,26 @@ async def seeded_db(db: AsyncSession):
     member = Person(
         id="member-00-0000-0000-000000000005",
         first_name="Jane",
-        last_name="Martin",
+        last_name="Rivera",
         gender="female",
         residence_country_code="CA",
-        branch="martin",
+        branch="rivera",
         is_admin=False,
         source=PersonSource.manual.value,
         account_state=AccountState.active.value,
     )
-    db.add_all([root, tyler, yuliya, grandpa, member])
+    db.add_all([root, alex, maria, grandpa, member])
     await db.flush()
 
-    # Tyler and Yuliya are parents of root (Luna)
-    pc1 = ParentChild(parent_id=tyler.id, child_id=root.id, kind="biological")
-    pc2 = ParentChild(parent_id=yuliya.id, child_id=root.id, kind="biological")
-    # Grandpa is Tyler's parent
-    pc3 = ParentChild(parent_id=grandpa.id, child_id=tyler.id, kind="biological")
+    # Alex and Maria are parents of root (Mia)
+    pc1 = ParentChild(parent_id=alex.id, child_id=root.id, kind="biological")
+    pc2 = ParentChild(parent_id=maria.id, child_id=root.id, kind="biological")
+    # Grandpa is Alex's parent
+    pc3 = ParentChild(parent_id=grandpa.id, child_id=alex.id, kind="biological")
     db.add_all([pc1, pc2, pc3])
 
-    # Tyler + Yuliya partnership (canonical ordering)
-    a_id, b_id = sorted([tyler.id, yuliya.id])
+    # Alex + Maria partnership (canonical ordering)
+    a_id, b_id = sorted([alex.id, maria.id])
     p1 = Partnership(person_a_id=a_id, person_b_id=b_id, kind="married", status="active")
     db.add(p1)
 
@@ -197,10 +197,10 @@ async def client(seeded_db: AsyncSession, session_factory, app_under_test: FastA
 
 @pytest_asyncio.fixture
 async def admin_client(seeded_db: AsyncSession, client: AsyncClient):
-    """Test client authenticated as Tyler (admin)."""
+    """Test client authenticated as Alex (admin)."""
     token = await create_session(
         seeded_db,
-        person_id="tyler-000-0000-0000-000000000002",
+        person_id="alex-000-0000-0000-000000000002",
         auth_method="magic_link",
     )
     await seeded_db.commit()

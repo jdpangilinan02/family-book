@@ -24,7 +24,7 @@ The most important call: cut scope hard. Ship a solid private family tree first.
 - `SPEC.md:287` says cache translations in SQLite. `SPEC.md:299` says "JSON files, NOT SQLite." That is an unresolved design decision, not a detail.
 - `SPEC.md:160` calls federation "Phase 2". `SPEC.md:266-268` later makes federation/ActivityPub "Phase 5 optional". The roadmap is internally inconsistent.
 - `SPEC.md:191-198` claims strong privacy and even a "client-side passphrase option", but the implementation plan has no model for encrypted fields, pending users, or access-controlled media.
-- `SPEC.md:193` says "All data stored on Tyler's infrastructure" while the plan uses Railway, Meta, and potentially OpenRouter/R2. That copy is false as written.
+- `SPEC.md:193` says "All data stored on Alex's infrastructure" while the plan uses Railway, Meta, and potentially OpenRouter/R2. That copy is false as written.
 
 ## Data Model Completeness — REVISE
 
@@ -244,7 +244,7 @@ Railway is a reasonable MVP host if you accept:
 - one region
 - a mounted volume for SQLite
 - a separate backup strategy
-- no illusion that this is fully on "Tyler's infrastructure"
+- no illusion that this is fully on "Alex's infrastructure"
 
 ### Problems in the current plan
 

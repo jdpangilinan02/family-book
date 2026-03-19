@@ -3,7 +3,7 @@ Inbound email webhook — Envelope API.
 
 POST /api/inbound/envelope
 
-Receives forwarded emails to family@martin.fm, extracts photos from
+Receives forwarded emails to family@family.example.com, extracts photos from
 attachments, matches sender email to Person, creates Moments.
 
 HMAC signature verification via X-Envelope-Signature header.

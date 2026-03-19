@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a working private family tree web app with Facebook OAuth login, interactive D3 tree visualization, privacy-aware person cards, and Railway deployment — ready for Tyler's family to use.
+**Goal:** Build a working private family tree web app with Facebook OAuth login, interactive D3 tree visualization, privacy-aware person cards, and Railway deployment — ready for Alex's family to use.
 
 **Architecture:** Python FastAPI backend serving static HTML/CSS/JS. SQLite database via SQLAlchemy ORM. Session-based auth using server-side session tokens in a DB table. Tree rendered client-side with D3.js v7, data sourced from a `/api/tree` JSON endpoint. No SPA framework — static HTML shells enhanced with vanilla JS.
 
@@ -23,7 +23,7 @@ These cannot be automated. Block implementation on resolving them first.
   - **MVP scope:** Only request `public_profile` and `email`. `user_photos` and `user_friends` require App Review (2-4 weeks). Phase 1 works without them.
 
 - [ ] **Identify root person**
-  - Luna is the tree root. Her DB row must NOT contain her real name.
+  - Mia is the tree root. Her DB row must NOT contain her real name.
   - Store as `first_name="Our"`, `last_name="Family"`, `display_name="Our Family"`
   - Document in CLAUDE.md: "Root person's real name must never appear in code, templates, or API responses."
 
@@ -134,11 +134,11 @@ Dates as ISO 8601 TEXT. Booleans as INTEGER 0/1. UUIDs as TEXT.
 | `photo_url` | TEXT | nullable | Local path `/photos/<uuid>.jpg` — downloaded from FB on login |
 | `birth_date` | TEXT | nullable | ISO 8601 |
 | `death_date` | TEXT | nullable | Non-null = memorial mode |
-| `location` | TEXT | nullable | Free text: "Madrid, Spain" |
+| `location` | TEXT | nullable | Free text: "Barcelona, Spain" |
 | `country_code` | TEXT | nullable | ISO 3166-1 alpha-2: "ES", "CA", "RU" |
 | `languages` | TEXT | nullable | JSON array serialized to text: `'["en","ru"]'` |
 | `bio` | TEXT | nullable | 1-3 sentences |
-| `branch` | TEXT | nullable | "martin", "semesock", "yuliya" — tree branch color assignment |
+| `branch` | TEXT | nullable | "rivera", "santos", "maria" — tree branch color assignment |
 | `contact_whatsapp` | TEXT | nullable | Digits only, no `+` or spaces: "17785551234" |
 | `contact_telegram` | TEXT | nullable | Username without @ |
 | `contact_signal` | TEXT | nullable | Digits only |
@@ -242,12 +242,12 @@ Pre-generate all UUIDs once, hardcode them, never regenerate. Format:
     },
     {
       "id": "<stable UUID>",
-      "first_name": "Tyler",
-      "last_name": "Martin",
+      "first_name": "Alex",
+      "last_name": "Rivera",
       "gender": "male",
-      "location": "Madrid, Spain",
+      "location": "Barcelona, Spain",
       "country_code": "ES",
-      "branch": "martin",
+      "branch": "rivera",
       "is_admin": true,
       "manually_added": true
     }
@@ -255,7 +255,7 @@ Pre-generate all UUIDs once, hardcode them, never regenerate. Format:
   "relationships": [
     {
       "id": "<stable UUID>",
-      "person_a_id": "<Tyler UUID>",
+      "person_a_id": "<Alex UUID>",
       "person_b_id": "<root UUID>",
       "type": "parent_child",
       "status": "active"
@@ -264,7 +264,7 @@ Pre-generate all UUIDs once, hardcode them, never regenerate. Format:
 }
 ```
 
-Minimum seed: root, Tyler, Yuliya, + 3-5 additional family members across Russia/Canada/Spain with correct relationships to make the tree and graph algorithm testable (include at least: one grandparent, one aunt or uncle, one first cousin).
+Minimum seed: root, Alex, Maria, + 3-5 additional family members across multiple countries with correct relationships to make the tree and graph algorithm testable (include at least: one grandparent, one aunt or uncle, one first cousin).
 
 ---
 
@@ -307,7 +307,7 @@ Minimum seed: root, Tyler, Yuliya, + 3-5 additional family members across Russia
 
 - [ ] Write `tests/conftest.py`:
   - `db` fixture: in-memory SQLite, `create_all_for_tests()`, run pragmas, yield session, rollback after each test
-  - `seeded_db` fixture: uses `db`, inserts root person + Tyler (admin) + Yuliya (admin) + one grandparent + one aunt + one first cousin with all correct relationships
+  - `seeded_db` fixture: uses `db`, inserts root person + Alex (admin) + Maria (admin) + one grandparent + one aunt + one first cousin with all correct relationships
   - `client` fixture: `AsyncClient` against the FastAPI app with `get_db` dependency overridden to use `db`
 
 - [ ] Write `tests/test_models.py`:
@@ -327,10 +327,10 @@ Minimum seed: root, Tyler, Yuliya, + 3-5 additional family members across Russia
 **Files:** `data/family_tree.json`, `backend/seed.py`, `tests/test_seed.py`
 
 - [ ] Create `data/family_tree.json`. Include:
-  - Root (Luna placeholder): `is_root=true`, `display_name="Our Family"`, no real name
-  - Tyler: `is_admin=true`, `country_code="ES"`, `gender="male"`, `branch="martin"`
-  - Yuliya: `is_admin=true`, `country_code="ES"`, `gender="female"`, `branch="yuliya"`
-  - Relationships: Tyler → root (parent_child), Yuliya → root (parent_child), Tyler ↔ Yuliya (spouse)
+  - Root (Mia placeholder): `is_root=true`, `display_name="Our Family"`, no real name
+  - Alex: `is_admin=true`, `country_code="ES"`, `gender="male"`, `branch="rivera"`
+  - Maria: `is_admin=true`, `country_code="ES"`, `gender="female"`, `branch="maria"`
+  - Relationships: Alex → root (parent_child), Maria → root (parent_child), Alex ↔ Maria (spouse)
   - 3-5 more family members with `branch` set: at least one grandparent, one aunt/uncle, one first cousin
 
 - [ ] Write `backend/seed.py`:
@@ -342,7 +342,7 @@ Minimum seed: root, Tyler, Yuliya, + 3-5 additional family members across Russia
 - [ ] Write `tests/test_seed.py`:
   - Test idempotency: run seed twice, person count is identical both times
   - Test exactly one `is_root=True` person exists
-  - Test Tyler and Yuliya have `is_admin=True`
+  - Test Alex and Maria have `is_admin=True`
   - Test root person's `display_name` equals "Our Family" (not a real child's name)
   - Test expected relationship count matches `family_tree.json`
 
@@ -362,7 +362,7 @@ Write ALL tests before any implementation. This is the most critical module.
 
   **BFS distance tests:**
   - `test_bfs_root_is_zero`
-  - `test_bfs_parent_is_one` (Tyler → Luna = distance 1)
+  - `test_bfs_parent_is_one` (Alex → Mia = distance 1)
   - `test_bfs_grandparent_is_two`
   - `test_bfs_aunt_via_parent_sibling` (aunt = 3 hops: up to parent, across to sibling)
   - `test_bfs_first_cousin` (distance 4: up, up, down, down via common grandparent)
@@ -532,7 +532,7 @@ Write ALL tests before any implementation. This is the most critical module.
   - Requires auth
   - Calls `graph.build_tree_for_d3(settings.ROOT_PERSON_ID, session)`
   - Returns `TreeResponse`
-  - Add `ROOT_PERSON_ID` to `Settings` (loaded from env or derived from seed — Tyler sets this once)
+  - Add `ROOT_PERSON_ID` to `Settings` (loaded from env or derived from seed — Alex sets this once)
 
 - [ ] Add `GET /api/health` (no auth): execute `SELECT 1` on DB, return `{"status": "ok"}`. Railway uses this.
 
@@ -554,7 +554,7 @@ Write ALL tests before any implementation. This is the most critical module.
   - Authenticated → 200 with valid JSON shape
   - Root node `name` field equals "Our Family" (not a real child's name) — this test is a privacy invariant
   - Layer 5 person in nodes has no contact fields, no birth_date
-  - Layer 1 person (Tyler) has all fields
+  - Layer 1 person (Alex) has all fields
 
 - [ ] Write `tests/test_api_people.py`:
   - `GET /api/people/{id}` unauthenticated → 302
@@ -584,7 +584,7 @@ Write ALL tests before any implementation. This is the most critical module.
   - CSS: `vars.css`, `reset.css`, `layout.css`, `landing.css`
   - Zero JavaScript — the landing page must render fully without JS
   - Body: simple `<nav>` with logo text; `<main>` with:
-    - Two circular trust photos (Tyler + Yuliya — use placeholder initially, replace with actual photos after seed)
+    - Two circular trust photos (Alex + Maria — use placeholder initially, replace with actual photos after seed)
     - `<h1>Family Book</h1>`
     - Tagline: 2 sentences max
     - `<a href="/auth/login" class="btn btn-primary">Connect with Facebook</a>`
@@ -659,7 +659,7 @@ Write ALL tests before any implementation. This is the most critical module.
   - `#family-tree:active`: `cursor: grabbing`
   - `.person-node`: `cursor: pointer; pointer-events: all` (pointer-events required for iOS Safari)
   - `.node-ring`: `fill: none; stroke-width: 3px`
-  - `.branch-martin .node-ring`: `stroke: var(--branch-martin)`, etc. for all branches
+  - `.branch-rivera .node-ring`: `stroke: var(--branch-rivera)`, etc. for all branches
   - `.node-name`: `font-size: 12px; text-anchor: middle; fill: var(--color-text); font-family: var(--font-family)`
   - `.node-relationship`: `font-size: 10px; text-anchor: middle; fill: var(--color-text-muted)`
   - `.link-parent-child`: `fill: none; stroke: var(--color-link-line); stroke-width: 1.5px`
@@ -766,7 +766,7 @@ Note: `tree.css` and `card.css` already written in Tasks 8-9 using vars. These v
   - `--color-border: #e7e5e4`
   - `--color-accent: #2563eb` — CTA, links
   - `--color-link-line: #d1d5db` — SVG tree connecting lines
-  - `--branch-martin: #2563eb`, `--branch-semesock: #16a34a`, `--branch-yuliya: #dc2626`
+  - `--branch-rivera: #2563eb`, `--branch-santos: #16a34a`, `--branch-maria: #dc2626`
 
   **Dark mode `@media (prefers-color-scheme: dark)`:** Override bg/surface/text/border. Reduce branch color saturation slightly.
 
@@ -856,7 +856,7 @@ Note: `tree.css` and `card.css` already written in Tasks 8-9 using vars. These v
 | `FB_APP_ID` | `1234567890` | From Facebook Developer Console |
 | `FB_APP_SECRET` | `abc123...` | Never commit |
 | `FB_REDIRECT_URI` | `https://family-book.up.railway.app/auth/callback` | Must exactly match FB app settings |
-| `ADMIN_FB_IDS` | `111111111,222222222` | Tyler's + Yuliya's numeric FB user IDs |
+| `ADMIN_FB_IDS` | `111111111,222222222` | Alex's + Maria's numeric FB user IDs |
 | `FERNET_KEY` | `<base64>` | Generate fresh for production |
 | `SESSION_SECRET` | `<64-char hex>` | Generate fresh for production |
 | `DATABASE_URL` | `sqlite:////app/data/family.db` | 4 slashes = absolute path |
@@ -869,7 +869,7 @@ Note: `tree.css` and `card.css` already written in Tasks 8-9 using vars. These v
 - [ ] Desktop full flow: landing → Facebook login → tree renders → click person → card opens → logout
 - [ ] iPhone full flow: same, with swipe-down card dismiss, pinch-zoom on tree
 - [ ] iPad full flow: sidebar card layout, wider tree
-- [ ] Admin flow: Tyler adds person, adds relationship, verifies tree, deletes both
+- [ ] Admin flow: Alex adds person, adds relationship, verifies tree, deletes both
 - [ ] Non-admin privacy check: log in as test family member → confirm no admin endpoint access (403) → confirm Layer 4/5 person cards omit contact info
 - [ ] Root node privacy check: confirm "Our Family" appears as root in tree, inspect HTML source — no real child's name anywhere
 - [ ] Full test suite: `pytest tests/ -v --cov=backend --cov-report=term-missing`
@@ -890,7 +890,7 @@ Note: `tree.css` and `card.css` already written in Tasks 8-9 using vars. These v
 
 **5. State token is single-use** — Clear the CSRF state cookie after the callback regardless of success/failure. If callback is replayed, verify-and-fail gracefully → redirect to `/`, not 500.
 
-**6. `ADMIN_FB_IDS` needs numeric IDs** — Not vanity slugs. Get Tyler's and Yuliya's numeric IDs by calling `GET /me?fields=id` during first login. Hardcode in env var.
+**6. `ADMIN_FB_IDS` needs numeric IDs** — Not vanity slugs. Get Alex's and Maria's numeric IDs by calling `GET /me?fields=id` during first login. Hardcode in env var.
 
 **7. Graph API version pinning** — Pin all URLs to `v21.0`. Set a reminder to upgrade before it reaches end-of-life (~2 years).
 
@@ -936,7 +936,7 @@ Note: `tree.css` and `card.css` already written in Tasks 8-9 using vars. These v
 
 **24. `updated_at` won't auto-update reliably** — SQLAlchemy's `onupdate=func.now()` is unreliable with SQLite TEXT dates. Use a `@event.listens_for(Session, "before_flush")` listener to set `updated_at = datetime.utcnow().isoformat()` on all `dirty` objects.
 
-**25. Admin FB IDs env var is the sole admin gate** — If Tyler's Facebook account is compromised, so is Family Book admin. Acceptable risk for Phase 1. Document in CLAUDE.md.
+**25. Admin FB IDs env var is the sole admin gate** — If Alex's Facebook account is compromised, so is Family Book admin. Acceptable risk for Phase 1. Document in CLAUDE.md.
 
 ---
 
@@ -1000,16 +1000,16 @@ pytest tests/ -v
 
 ## Phase 1 Definition of Done
 
-- [ ] Tyler logs in via Facebook and sees the seeded family tree
-- [ ] Yuliya logs in via Facebook and sees the family tree
+- [ ] Alex logs in via Facebook and sees the seeded family tree
+- [ ] Maria logs in via Facebook and sees the family tree
 - [ ] At least one other family member (test user) logs in and sees tree with correct relationship labels
-- [ ] Luna's real name does not appear in the UI, API responses, HTML source, or logs
+- [ ] Mia's real name does not appear in the UI, API responses, HTML source, or logs
 - [ ] Tree renders with photos, names, connecting lines — zoom/pan works on desktop and mobile
 - [ ] Tapping any person opens their card: photo, relationship label, location flag, birthday, contact links (privacy-gated)
 - [ ] All tests pass: `pytest tests/ -v`
 - [ ] App deployed on Railway, accessible at HTTPS URL
 - [ ] SQLite data persists across Railway redeploys
-- [ ] Tyler and Yuliya can add, edit, delete persons and relationships from the admin UI
+- [ ] Alex and Maria can add, edit, delete persons and relationships from the admin UI
 
 **Prod URL:** _(update after Railway deploy)_
 **Local:** [http://localhost:8000](http://localhost:8000)

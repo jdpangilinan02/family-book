@@ -2,7 +2,7 @@
 import pytest
 
 
-TYLER_ID = "tyler-000-0000-0000-000000000002"
+ADMIN_ID = "alex-000-0000-0000-000000000002"
 MEMBER_ID = "member-00-0000-0000-000000000005"
 
 
@@ -17,14 +17,14 @@ class TestMomentsCRUD:
         resp = await admin_client.post("/api/moments", json={
             "kind": "text",
             "body": "Hello family!",
-            "person_id": TYLER_ID,
+            "person_id": ADMIN_ID,
         })
         assert resp.status_code == 201
         body = resp.json()
         assert body["kind"] == "text"
         assert body["body"] == "Hello family!"
-        assert body["poster"]["id"] == TYLER_ID
-        assert body["about"]["id"] == TYLER_ID
+        assert body["poster"]["id"] == ADMIN_ID
+        assert body["about"]["id"] == ADMIN_ID
         assert body["reactions"] == {}
         assert body["comment_count"] == 0
 
@@ -34,7 +34,7 @@ class TestMomentsCRUD:
             "body": "Auto person_id",
         })
         assert resp.status_code == 201
-        assert resp.json()["about"]["id"] == TYLER_ID
+        assert resp.json()["about"]["id"] == ADMIN_ID
 
     async def test_create_moment_with_media_ids(self, admin_client):
         resp = await admin_client.post("/api/moments", json={
@@ -143,14 +143,14 @@ class TestMomentsFeed:
 
     async def test_feed_filter_by_person(self, admin_client):
         await admin_client.post("/api/moments", json={
-            "kind": "text", "body": "Tyler's moment",
-            "person_id": TYLER_ID,
+            "kind": "text", "body": "Alex's moment",
+            "person_id": ADMIN_ID,
         })
 
-        resp = await admin_client.get(f"/api/moments?person={TYLER_ID}")
+        resp = await admin_client.get(f"/api/moments?person={ADMIN_ID}")
         assert resp.status_code == 200
         for item in resp.json():
-            assert item["about"]["id"] == TYLER_ID
+            assert item["about"]["id"] == ADMIN_ID
 
 
 class TestMomentsPermissions:

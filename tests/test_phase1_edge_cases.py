@@ -17,8 +17,8 @@ from app.services.auth_service import (
 )
 
 ROOT_ID = "root-0000-0000-0000-000000000001"
-TYLER_ID = "tyler-000-0000-0000-000000000002"
-YULIYA_ID = "yuliya-00-0000-0000-000000000003"
+ADMIN_ID = "alex-000-0000-0000-000000000002"
+ADMIN2_ID = "maria-00-0000-0000-000000000003"
 MEMBER_ID = "member-00-0000-0000-000000000005"
 
 
@@ -36,14 +36,14 @@ async def test_create_person_accepts_unicode_names(admin_client: AsyncClient):
 async def test_create_person_rejects_very_long_first_name(admin_client: AsyncClient):
     resp = await admin_client.post(
         "/api/persons",
-        json={"first_name": "A" * 201, "last_name": "Martin"},
+        json={"first_name": "A" * 201, "last_name": "Rivera"},
     )
     assert resp.status_code == 422
 
 
 @pytest.mark.asyncio
 async def test_search_sql_injection_payload_does_not_bypass_filters(admin_client: AsyncClient):
-    resp = await admin_client.get("/api/persons", params={"search": "Tyler' OR 1=1 --"})
+    resp = await admin_client.get("/api/persons", params={"search": "Alex' OR 1=1 --"})
     assert resp.status_code == 200
     assert resp.json() == []
 
@@ -57,7 +57,7 @@ async def test_branch_filter_sql_injection_payload_does_not_match(admin_client: 
 
 @pytest.mark.asyncio
 async def test_expired_magic_link_route_rejected(client: AsyncClient, seeded_db: AsyncSession):
-    token = await create_magic_link(seeded_db, TYLER_ID)
+    token = await create_magic_link(seeded_db, ADMIN_ID)
     await seeded_db.commit()
 
     result = await seeded_db.execute(
@@ -74,7 +74,7 @@ async def test_expired_magic_link_route_rejected(client: AsyncClient, seeded_db:
 
 @pytest.mark.asyncio
 async def test_magic_link_route_cannot_be_reused(client: AsyncClient, seeded_db: AsyncSession):
-    token = await create_magic_link(seeded_db, TYLER_ID)
+    token = await create_magic_link(seeded_db, ADMIN_ID)
     await seeded_db.commit()
 
     first = await client.get(f"/auth/magic-link/{token}")
@@ -88,12 +88,12 @@ async def test_magic_link_route_cannot_be_reused(client: AsyncClient, seeded_db:
 async def test_session_limit_evicts_oldest_session(seeded_db: AsyncSession):
     tokens: list[str] = []
     for _ in range(11):
-        tokens.append(await create_session(seeded_db, TYLER_ID, "magic_link"))
+        tokens.append(await create_session(seeded_db, ADMIN_ID, "magic_link"))
         await seeded_db.commit()
 
     result = await seeded_db.execute(
         select(UserSession)
-        .where(UserSession.person_id == TYLER_ID)
+        .where(UserSession.person_id == ADMIN_ID)
         .order_by(UserSession.created_at.asc())
     )
     sessions = result.scalars().all()
@@ -109,15 +109,15 @@ async def test_root_person_redacted_in_list_detail_tree_and_search(
     seeded_db: AsyncSession,
 ):
     root = await seeded_db.get(Person, ROOT_ID)
-    root.first_name = "Luna"
-    root.last_name = "Martin"
+    root.first_name = "Mia"
+    root.last_name = "Rivera"
     root.nickname = "Moon"
     await seeded_db.commit()
 
     list_resp = await admin_client.get("/api/persons")
     detail_resp = await admin_client.get(f"/api/persons/{ROOT_ID}")
     tree_resp = await admin_client.get("/api/tree")
-    search_resp = await admin_client.get("/api/persons", params={"search": "Luna"})
+    search_resp = await admin_client.get("/api/persons", params={"search": "Mia"})
 
     assert list_resp.status_code == 200
     assert detail_resp.status_code == 200
@@ -167,7 +167,7 @@ async def test_create_person_rejects_empty_names(admin_client: AsyncClient):
 async def test_create_parent_child_rejects_circular_relationship(admin_client: AsyncClient):
     resp = await admin_client.post(
         "/api/relationships/parent-child",
-        json={"parent_id": ROOT_ID, "child_id": TYLER_ID, "kind": "biological"},
+        json={"parent_id": ROOT_ID, "child_id": ADMIN_ID, "kind": "biological"},
     )
     assert resp.status_code == 409
 
@@ -176,7 +176,7 @@ async def test_create_parent_child_rejects_circular_relationship(admin_client: A
 async def test_duplicate_partnership_with_null_start_date_is_rejected(admin_client: AsyncClient):
     resp = await admin_client.post(
         "/api/relationships/partnership",
-        json={"person_a_id": TYLER_ID, "person_b_id": YULIYA_ID, "kind": "married"},
+        json={"person_a_id": ADMIN_ID, "person_b_id": ADMIN2_ID, "kind": "married"},
     )
     assert resp.status_code == 409
 
@@ -187,11 +187,11 @@ async def test_root_real_name_is_not_searchable(
     seeded_db: AsyncSession,
 ):
     root = await seeded_db.get(Person, ROOT_ID)
-    root.first_name = "Luna"
-    root.last_name = "Martin"
+    root.first_name = "Mia"
+    root.last_name = "Rivera"
     await seeded_db.commit()
 
-    resp = await admin_client.get("/api/persons", params={"search": "Luna"})
+    resp = await admin_client.get("/api/persons", params={"search": "Mia"})
     assert resp.status_code == 200
     assert resp.json() == []
 

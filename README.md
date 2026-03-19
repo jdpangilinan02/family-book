@@ -73,7 +73,7 @@ A family timeline. First steps. Weddings. Graduations. That Tuesday when grandpa
 No access control lists. No admin panels for permissions. **The family tree structure IS the permission system.** Graph distance determines what you can see. Close family sees everything. Distant relatives see less. It's how privacy works in real families.
 
 ### 🌍 Multi-Language
-English, Spanish, Russian out of the box. Add any language with a JSON file. Names render in their native script — Бабушка Наташа stays Бабушка Наташа.
+English, Spanish, Russian out of the box. Add any language with a JSON file. Names render in their native script — Бабушка Юки stays Бабушка Юки.
 
 ### 📱 PWA
 Install on your phone. Works offline for browsing. Feels native. No app store required.
@@ -215,7 +215,7 @@ Your family's memories are scattered across platforms that don't care about your
 - **Facebook** — Your family photos train their AI. Your grandmother's face is in a dataset.
 - **iCloud/Google Photos** — Shared albums with no context. Who is this person? What year was this?
 - **Ancestry.com** — $299/year to see your own family tree. Your DNA sold to insurance companies.
-- **Physical albums** — Rotting in a closet in Vancouver. One flood away from gone.
+- **Physical albums** — Rotting in a closet in Portland. One flood away from gone.
 
 ### The Vision
 
@@ -223,11 +223,11 @@ A single place where:
 
 1. **Every family memory flows in automatically.** WhatsApp photos arrive via Matrix bridge. Email forwards get parsed. Old scanned photos get uploaded with dates and context.
 
-2. **The family tree IS the permission system.** Your cousin in Moscow sees different things than your neighbor. No admin panel needed — closeness in the tree determines closeness in access. This is how privacy works in real families.
+2. **The family tree IS the permission system.** Your cousin in Tokyo sees different things than your neighbor. No admin panel needed — closeness in the tree determines closeness in access. This is how privacy works in real families.
 
-3. **Multiple families share one instance.** The Martins and the Volodins on the same server, each seeing their own branch, with the shared grandchildren in the middle. Install once, serve the whole extended family.
+3. **Multiple families share one instance.** The Riveras and the Santoss on the same server, each seeing their own branch, with the shared grandchildren in the middle. Install once, serve the whole extended family.
 
-4. **Every fact has provenance.** "Grandma was born in 1943" — who said that? When? Was it from a GEDCOM import, a WhatsApp message from Aunt Natasha, or a birth certificate scan? Source tracking on every piece of data.
+4. **Every fact has provenance.** "Grandma was born in 1943" — who said that? When? Was it from a GEDCOM import, a WhatsApp message from Aunt Yuki, or a birth certificate scan? Source tracking on every piece of data.
 
 5. **It works for every culture.** Patronymics (Russian), maiden names (Western), Eastern name order (Japanese), fuzzy dates ("about 1943"), and relationship labels that respect the actual complexity of modern families — step-parents, adoptive parents, guardians, domestic partners.
 
@@ -297,4 +297,4 @@ MIT — do whatever you want with it.
 
 ---
 
-*Built with love for Luna.* 🌙
+*Built with love for Mia.* 🌙
