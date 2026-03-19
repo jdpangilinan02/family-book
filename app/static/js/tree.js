@@ -202,8 +202,11 @@
         var defs = nodeG.append('defs');
         defs.append('clipPath').attr('id', clipId)
           .append('circle').attr('r', NODE_RADIUS);
+        var photoSrc = person.photo_url.startsWith('http')
+          ? person.photo_url
+          : '/api/media/' + person.photo_url + '/file';
         nodeG.append('image')
-          .attr('href', '/api/media/' + person.photo_url + '/file')
+          .attr('href', photoSrc)
           .attr('x', -NODE_RADIUS).attr('y', -NODE_RADIUS)
           .attr('width', NODE_RADIUS * 2).attr('height', NODE_RADIUS * 2)
           .attr('clip-path', 'url(#' + clipId + ')')

@@ -57,7 +57,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' https://unpkg.com https://d3js.org; "
             "style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data: blob:; "
+            "img-src 'self' data: blob: https://ui-avatars.com https://picsum.photos https://fastly.picsum.photos; "
             "connect-src 'self'; "
             "font-src 'self'; "
             "frame-ancestors 'none'; "
