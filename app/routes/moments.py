@@ -112,6 +112,10 @@ async def _build_moment_card(
     media_list = []
     if moment.media_ids:
         for mid in moment.media_ids:
+            # Support static demo photos referenced by path
+            if mid.startswith("/static/"):
+                media_list.append({"id": mid, "url": mid, "width": 800, "height": 600})
+                continue
             result = await db.execute(select(Media).where(Media.id == mid))
             m = result.scalar_one_or_none()
             if m:

@@ -2,7 +2,7 @@
   {% for p in persons %}
   <a href="{{ url_prefix }}/people/{{ p.id }}" class="person-card-sm">
     <div class="avatar avatar--lg" style="margin:0 auto 12px;">
-      {% if p.photo_url and p.photo_url.startswith('http') %}
+      {% if p.photo_url and (p.photo_url.startswith('http') or p.photo_url.startswith('/')) %}
       <img src="{{ p.photo_url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
       {% elif p.photo_url %}
       <img src="/api/media/{{ p.photo_url }}/file" alt="">

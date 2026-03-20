@@ -2,7 +2,7 @@
   <div class="moment__header">
     {% if m.poster %}
     <a href="{{ url_prefix }}/people/{{ m.poster.id }}" class="avatar">
-      {% if m.poster.photo_url and m.poster.photo_url.startswith('http') %}
+      {% if m.poster.photo_url and (m.poster.photo_url.startswith('http') or m.poster.photo_url.startswith('/')) %}
       <img src="{{ m.poster.photo_url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
       {% elif m.poster.photo_url %}
       <img src="/api/media/{{ m.poster.photo_url }}/file" alt="">
@@ -21,7 +21,7 @@
     </div>
     {% elif m.about %}
     <a href="{{ url_prefix }}/people/{{ m.about.id }}" class="avatar">
-      {% if m.about.photo_url and m.about.photo_url.startswith('http') %}
+      {% if m.about.photo_url and (m.about.photo_url.startswith('http') or m.about.photo_url.startswith('/')) %}
       <img src="{{ m.about.photo_url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
       {% elif m.about.photo_url %}
       <img src="/api/media/{{ m.about.photo_url }}/file" alt="">

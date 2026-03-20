@@ -16,7 +16,7 @@
       <!-- Upload profile photo -->
       <div class="form-group" style="text-align:center;">
         <div class="avatar avatar--xl" style="margin:0 auto 12px;">
-          {% if person.photo_url and person.photo_url.startswith('http') %}
+          {% if person.photo_url and (person.photo_url.startswith('http') or person.photo_url.startswith('/')) %}
           <img src="{{ person.photo_url }}" alt="" id="profile-photo-preview" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
           {% elif person.photo_url %}
           <img src="/api/media/{{ person.photo_url }}/file" alt="" id="profile-photo-preview">
