@@ -32,11 +32,17 @@ Browse a demo family tree with seed data. No sign-up required to explore. This i
 
 ## Your family's memories don't belong to Facebook
 
-Your photos are in WhatsApp groups that disappear when someone changes phones. Your family tree is on Ancestry — behind a $299/year paywall, with your DNA sold to third parties. Your conversations are in iMessage, synced to a cloud you don't control. Your kids' first steps are in an Instagram story that expired 24 hours later.
+Every photo you upload, every conversation you have, every relationship you map on a platform becomes training data for AI models. Your grandmother's recipe in a WhatsApp group is feeding a neural network right now. You agreed to it in a terms update you never read.
 
-**None of it is yours.**
+Platforms change without asking. WhatsApp rewrites its privacy policy. Instagram kills features. Ancestry gets acquired. Your data follows the corporate roadmap, not yours.
 
-Family Book pulls your family's memories out of these silos and into a place you own. Import from WhatsApp, iMessage, Messenger. Self-host on your own server. Your SQLite database. Your photos on your disk. Export anytime. No subscription. No algorithm. No one training AI on your grandmother's recipes.
+Governments block platforms overnight. Russia restricted Telegram and WhatsApp. Families who kept their archives on those services lost access with no warning. If your country bans the app, your memories go dark.
+
+Your family's data has real value. Today you give it away for free. As personal data licensing matures, you will want to decide who accesses it and on what terms. You can't license what you don't control.
+
+A SQLite file on your own server outlives every startup, every acquisition, every terms-of-service change. No subscription to lapse. No company to shut down. Your great-grandchildren can open it in 50 years.
+
+Family Book gives you that file.
 
 ---
 
