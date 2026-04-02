@@ -7,6 +7,7 @@ Detects forwarded media (no EXIF = likely WhatsApp/Telegram forward).
 Falls back to filename date patterns (IMG_20260331_1523.jpg).
 """
 
+import json
 import re
 import subprocess
 import os
@@ -277,7 +278,6 @@ def extract_video_metadata(file_path: str, filename: str | None = None) -> Media
         if result.returncode != 0:
             return meta
 
-        import json
         probe = json.loads(result.stdout)
     except (subprocess.TimeoutExpired, FileNotFoundError, json.JSONDecodeError):
         # ffprobe not available — extract what we can from filename
