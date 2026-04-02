@@ -1,6 +1,8 @@
 import logging
-import pytest
 from datetime import datetime, timedelta, timezone
+from urllib.parse import parse_qs, urlparse
+
+import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -210,3 +212,88 @@ async def test_expired_magic_link_rejected(seeded_db: AsyncSession):
 
     person = await validate_magic_link(seeded_db, token)
     assert person is None
+
+
+@pytest.mark.asyncio
+async def test_magic_link_request_includes_safe_return_to_in_email(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    captured = {}
+
+    async def fake_send_magic_link_email(to_email: str, magic_link_url: str) -> bool:
+        captured["to_email"] = to_email
+        captured["magic_link_url"] = magic_link_url
+        return True
+
+    monkeypatch.setattr("app.routes.auth_routes.send_magic_link_email", fake_send_magic_link_email)
+
+    resp = await client.post(
+        "/auth/magic-link",
+        json={"email": "alex@example.com", "return_to": "/trips/join/summer-2026"},
+    )
+
+    assert resp.status_code == 200
+    assert captured["to_email"] == "alex@example.com"
+    parsed = urlparse(captured["magic_link_url"])
+    assert parsed.path.startswith("/auth/magic-link/")
+    assert parse_qs(parsed.query) == {"return_to": ["/trips/join/summer-2026"]}
+
+
+@pytest.mark.asyncio
+async def test_magic_link_request_rejects_external_return_to_in_email(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    captured = {}
+
+    async def fake_send_magic_link_email(to_email: str, magic_link_url: str) -> bool:
+        captured["magic_link_url"] = magic_link_url
+        return True
+
+    monkeypatch.setattr("app.routes.auth_routes.send_magic_link_email", fake_send_magic_link_email)
+
+    resp = await client.post(
+        "/auth/magic-link",
+        json={"email": "alex@example.com", "return_to": "https://evil.example/phish"},
+    )
+
+    assert resp.status_code == 200
+    parsed = urlparse(captured["magic_link_url"])
+    assert parsed.path.startswith("/auth/magic-link/")
+    assert parsed.query == ""
+
+
+@pytest.mark.asyncio
+async def test_verify_magic_link_redirects_into_app_and_sets_session_cookie(
+    client: AsyncClient,
+    seeded_db: AsyncSession,
+):
+    token = await create_magic_link(seeded_db, "alex-000-0000-0000-000000000002")
+    await seeded_db.commit()
+
+    resp = await client.get(
+        f"/auth/magic-link/{token}?return_to=/tree",
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 303
+    assert resp.headers["location"] == "/tree"
+    assert "session=" in resp.headers.get("set-cookie", "")
+
+    me = await client.get("/auth/me")
+    assert me.status_code == 200
+    assert me.json()["display_name"] == "Alex Rivera"
+
+
+@pytest.mark.asyncio
+async def test_verify_magic_link_expired_redirects_to_login(
+    client: AsyncClient,
+):
+    resp = await client.get(
+        "/auth/magic-link/bogus-token-that-does-not-exist",
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 303
+    assert resp.headers["location"] == "/login?error=expired"

@@ -1,6 +1,7 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from urllib.parse import urlencode
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import HTTPException
@@ -87,7 +88,10 @@ def create_app() -> FastAPI:
         path = request.url.path
         is_api = any(path.startswith(p) for p in _API_PREFIXES)
         if exc.status_code == 401 and not is_api:
-            return RedirectResponse(f"/login?return_to={path}", status_code=302)
+            return_to = path
+            if request.url.query:
+                return_to = f"{path}?{request.url.query}"
+            return RedirectResponse(f"/login?{urlencode({'return_to': return_to})}", status_code=302)
         from fastapi.responses import JSONResponse
         return JSONResponse(
             status_code=exc.status_code,

@@ -237,12 +237,15 @@ async def home(
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request, current_user: Person | None = Depends(get_current_user)):
+    return_to = request.query_params.get("return_to", "/")
+    if not return_to.startswith("/") or return_to.startswith("//"):
+        return_to = "/"
     if current_user:
-        return RedirectResponse("/", status_code=302)
+        return RedirectResponse(return_to, status_code=302)
     from app.config import get_settings
     settings = get_settings()
     return templates.TemplateResponse("login.html", _ctx(
-        request, fb_enabled=settings.FB_ENABLED,
+        request, fb_enabled=settings.FB_ENABLED, return_to=return_to,
     ))
 
 

@@ -1,6 +1,8 @@
 import logging
+from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,8 +31,18 @@ def _redact_token(token: str) -> str:
     return f"{token[:8]}..."
 
 
+def _normalize_return_to(return_to: str | None) -> str:
+    if not return_to:
+        return "/"
+    candidate = return_to.strip()
+    if not candidate.startswith("/") or candidate.startswith("//"):
+        return "/"
+    return candidate
+
+
 class MagicLinkRequest(BaseModel):
     email: str
+    return_to: str | None = "/"
 
 
 @router.get("/api/invite/{token}")
@@ -100,7 +112,10 @@ async def request_magic_link(
     if person:
         token = await create_magic_link(db, person.id)
         settings = get_settings()
+        return_to = _normalize_return_to(body.return_to)
         magic_link_url = f"{settings.BASE_URL}/auth/magic-link/{token}"
+        if return_to != "/":
+            magic_link_url = f"{magic_link_url}?{urlencode({'return_to': return_to})}"
         await send_magic_link_email(person.contact_email, magic_link_url)
         logger.info(
             "Magic link requested for %s: token=%s",
@@ -115,13 +130,12 @@ async def request_magic_link(
 async def verify_magic_link(
     token: str,
     request: Request,
-    response: Response,
     db: AsyncSession = Depends(get_db),
 ):
-    """Verify a magic link token and create a session."""
+    """Verify a magic link token, create a session, and redirect into the app."""
     person = await validate_magic_link(db, token)
     if not person:
-        raise HTTPException(status_code=404, detail="Invalid or expired magic link")
+        return RedirectResponse(url="/login?error=expired", status_code=303)
 
     session_token = await create_session(
         db,
@@ -131,9 +145,13 @@ async def verify_magic_link(
         user_agent=request.headers.get("user-agent"),
     )
 
+    await db.commit()
+
     settings = get_settings()
     is_secure = settings.BASE_URL.startswith("https")
-    response.set_cookie(
+    return_to = _normalize_return_to(request.query_params.get("return_to"))
+    redirect = RedirectResponse(url=return_to, status_code=303)
+    redirect.set_cookie(
         key=SESSION_COOKIE_NAME,
         value=session_token,
         httponly=True,
@@ -142,7 +160,7 @@ async def verify_magic_link(
         max_age=30 * 24 * 3600,
         path="/",
     )
-    return {"status": "ok", "person_id": person.id}
+    return redirect
 
 
 @router.post("/auth/logout")
