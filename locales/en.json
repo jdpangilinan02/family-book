@@ -165,5 +165,42 @@
     "photos_count": "photos",
     "failed_update": "Failed to update trip",
     "failed_delete": "Failed to delete trip"
+  },
+  "locale": {
+    "en": "English",
+    "es": "Español",
+    "ru": "Русский"
+  },
+  "landing": {
+    "language_label": "Language",
+    "self_host_label": "Private self-hosted archive",
+    "hero_title": "Claim your family archive before it becomes another generic app.",
+    "hero_subtitle": "Start with your family name, preferred language, and a look that feels like home. This install should belong to your family from the first page.",
+    "bullet_private": "Private by default, with invite-led access instead of a public feed.",
+    "bullet_invites": "Set the language and then invite relatives into a space that already feels familiar.",
+    "bullet_keep": "Keep your files, tree, and memories on your own server — not trapped in someone else's roadmap.",
+    "cta_claim": "Start onboarding",
+    "cta_demo": "View demo family",
+    "cta_login": "Sign in",
+    "setup_title": "First-run setup",
+    "claim_path": "Make this install yours before you invite anyone else.",
+    "private_label": "Private site",
+    "setup_hint": "Pick the family name and accent you want new relatives to see first. You can refine the rest once you're inside.",
+    "name_label": "Family or archive name",
+    "name_placeholder": "e.g. Volodin Family Archive",
+    "accent_label": "Initial visual style",
+    "accent_forest": "Forest",
+    "accent_ocean": "Ocean",
+    "accent_rose": "Rose",
+    "save": "Save landing style",
+    "saved": "Saved",
+    "onboard_cta": "Already the steward of this archive? Continue to sign-in and claim the private space.",
+    "feature_private_title": "Private from the start",
+    "feature_private_desc": "The first-run path should feel like setting up a home, not walking into a public social network.",
+    "feature_tree_title": "Multilingual family context",
+    "feature_tree_desc": "Switch language immediately and keep the interface close to the family's real linguistic life.",
+    "feature_invite_title": "Invite with intention",
+    "feature_invite_desc": "Claim the archive, choose the tone, then bring in relatives through invite-led onboarding instead of generic sign-up funnels.",
+    "footer_line": "A private family archive, shaped before the first invitation goes out."
   }
 }

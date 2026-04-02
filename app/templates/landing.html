@@ -3,42 +3,111 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ t('app.name') }} — Your family's story, your terms</title>
+  <title>{{ site_title }} — {{ t('landing.hero_subtitle') }}</title>
   <link rel="stylesheet" href="/static/css/main.css">
   <meta name="theme-color" content="#faf8f5">
+  <meta name="description" content="{{ t('landing.hero_subtitle') }}">
+  {% include 'partials/theme_overrides.html' %}
 </head>
 <body>
   <div class="landing">
-    <div class="landing__hero">
-      <div class="landing__icon">🌳</div>
-      <h1 class="landing__title">{{ t('app.name') }}</h1>
-      <p class="landing__tagline">"Your family's story, your terms"</p>
-      <div class="landing__actions">
-        <a href="/demo" class="btn btn--primary btn--lg">Try the Demo</a>
-        <a href="/login" class="btn btn--outline btn--lg">Sign In</a>
+    <header class="landing__top">
+      <div class="landing__brand">
+        <div class="landing__icon">🌳</div>
+        <div>
+          <div class="landing__brand-title">{{ site_title }}</div>
+          <div class="landing__brand-tag">{{ t('landing.self_host_label') }}</div>
+        </div>
       </div>
+      <div class="landing__top-actions">
+        {% include 'partials/language_switcher.html' %}
+        <a href="/login" class="landing__login">{{ t('landing.cta_login') }}</a>
+      </div>
+    </header>
+
+    <div class="landing__grid">
+      <section class="landing__hero-panel">
+        <p class="eyebrow">{{ t('landing.self_host_label') }}</p>
+        <h1 class="landing__title">{{ t('landing.hero_title') }}</h1>
+        <p class="landing__tagline">{{ t('landing.hero_subtitle') }}</p>
+        <ul class="landing__bullets">
+          <li>🔒 {{ t('landing.bullet_private') }}</li>
+          <li>✅ {{ t('landing.bullet_invites') }}</li>
+          <li>💾 {{ t('landing.bullet_keep') }}</li>
+        </ul>
+        <div class="landing__actions">
+          <a href="#setup" class="btn btn--primary btn--lg">{{ t('landing.cta_claim') }}</a>
+          <a href="/demo" class="btn btn--outline btn--lg">{{ t('landing.cta_demo') }}</a>
+        </div>
+      </section>
+
+      <section class="landing__setup-panel" id="setup">
+        <div class="setup-card">
+          <div class="setup-card__header">
+            <div>
+              <p class="eyebrow">{{ t('landing.setup_title') }}</p>
+              <h3>{{ t('landing.claim_path') }}</h3>
+            </div>
+            <span class="setup-card__pill">{{ t('landing.private_label') }}</span>
+          </div>
+          <p class="setup-card__hint">{{ t('landing.setup_hint') }}</p>
+
+          <form hx-post="/site/settings" hx-target="#setup-status" hx-swap="innerHTML" class="setup-form">
+            <label for="site-title">{{ t('landing.name_label') }}</label>
+            <input id="site-title" name="title" class="form-input" value="{{ site_settings.title or site_title }}" placeholder="{{ t('landing.name_placeholder') }}" maxlength="120" autocomplete="off">
+
+            <label>{{ t('landing.accent_label') }}</label>
+            <div class="accent-grid">
+              <label class="accent-chip accent-chip--forest">
+                <input type="radio" name="accent" value="forest" {% if site_settings.accent == 'forest' %}checked{% endif %}>
+                <span>{{ t('landing.accent_forest') }}</span>
+              </label>
+              <label class="accent-chip accent-chip--ocean">
+                <input type="radio" name="accent" value="ocean" {% if site_settings.accent == 'ocean' %}checked{% endif %}>
+                <span>{{ t('landing.accent_ocean') }}</span>
+              </label>
+              <label class="accent-chip accent-chip--rose">
+                <input type="radio" name="accent" value="rose" {% if site_settings.accent == 'rose' %}checked{% endif %}>
+                <span>{{ t('landing.accent_rose') }}</span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--block">{{ t('landing.save') }}</button>
+            <p class="text-sm text-muted" style="margin-top: 8px;">{{ t('landing.setup_hint') }}</p>
+          </form>
+
+          <div id="setup-status">
+            {% include 'partials/site_settings_preview.html' %}
+          </div>
+
+          <div class="claim-path">
+            <p>{{ t('landing.onboard_cta') }}</p>
+            <a href="/login" class="btn btn--ghost">{{ t('landing.cta_login') }}</a>
+          </div>
+        </div>
+      </section>
     </div>
 
-    <div class="landing__features">
+    <section class="landing__features">
+      <div class="feature-card">
+        <div class="feature-card__icon">🛠️</div>
+        <h3 class="feature-card__title">{{ t('landing.feature_private_title') }}</h3>
+        <p class="feature-card__desc">{{ t('landing.feature_private_desc') }}</p>
+      </div>
       <div class="feature-card">
         <div class="feature-card__icon">🌿</div>
-        <h3 class="feature-card__title">Family Tree</h3>
-        <p class="feature-card__desc">Visualize your family connections with an interactive tree. Add generations, partnerships, and branches.</p>
+        <h3 class="feature-card__title">{{ t('landing.feature_tree_title') }}</h3>
+        <p class="feature-card__desc">{{ t('landing.feature_tree_desc') }}</p>
       </div>
       <div class="feature-card">
-        <div class="feature-card__icon">📸</div>
-        <h3 class="feature-card__title">Moments &amp; Memories</h3>
-        <p class="feature-card__desc">Share photos, milestones, and stories. A living timeline of your family's most treasured moments.</p>
+        <div class="feature-card__icon">📨</div>
+        <h3 class="feature-card__title">{{ t('landing.feature_invite_title') }}</h3>
+        <p class="feature-card__desc">{{ t('landing.feature_invite_desc') }}</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-card__icon">🔒</div>
-        <h3 class="feature-card__title">Private &amp; Sovereign</h3>
-        <p class="feature-card__desc">Self-hosted, no ads, no algorithms. Your family's data stays on your server, forever under your control.</p>
-      </div>
-    </div>
+    </section>
 
     <div class="landing__footer">
-      <p>{{ t('app.name') }} — Private family archive, self-hosted with love.</p>
+      <p>{{ site_title }} — {{ t('landing.footer_line') }}</p>
     </div>
   </div>
 </body>

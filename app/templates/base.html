@@ -3,29 +3,33 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{{ t('app.name') }}{% endblock %}</title>
+  <title>{% block title %}{{ site_title }}{% endblock %}</title>
   <link rel="stylesheet" href="/static/css/main.css">
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#faf8f5">
-  <meta name="description" content="{{ t('app.name') }} — {{ t('app.tagline') }}">
-  <meta property="og:title" content="{{ t('app.name') }}">
-  <meta property="og:site_name" content="{{ t('app.name') }}">
+  <meta name="description" content="{{ site_title }} — {{ t('app.tagline') }}">
+  <meta property="og:title" content="{{ site_title }}">
+  <meta property="og:site_name" content="{{ site_title }}">
   <meta property="og:description" content="{{ t('app.tagline') }}">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  {% include 'partials/theme_overrides.html' %}
   {% block head %}{% endblock %}
 </head>
 <body>
   {% if demo_mode %}
   {# Demo mode navigation #}
   <nav class="nav" id="main-nav">
-    <a href="/demo" class="nav__brand">{{ t('app.name') }} <span class="nav__brand-demo">Demo</span></a>
+    <a href="/demo" class="nav__brand">{{ site_title }} <span class="nav__brand-demo">Demo</span></a>
     <div class="nav__links" id="nav-links">
       <a href="/demo" class="nav__link {% if active_page == 'home' %}nav__link--active{% endif %}">{{ t('nav.moments') }}</a>
       <a href="/demo/tree" class="nav__link {% if active_page == 'tree' %}nav__link--active{% endif %}">{{ t('nav.tree') }}</a>
       <a href="/demo/people" class="nav__link {% if active_page == 'people' %}nav__link--active{% endif %}">{{ t('nav.people') }}</a>
       <a href="/login" class="nav__link">{{ t('nav.login') }}</a>
+    </div>
+    <div class="nav__controls">
+      {% include 'partials/language_switcher.html' %}
     </div>
     <button class="nav__hamburger" onclick="toggleNav()" aria-label="Menu">&#9776;</button>
   </nav>
@@ -38,7 +42,7 @@
   </div>
   {% elif current_user %}
   <nav class="nav" id="main-nav">
-    <a href="/" class="nav__brand">{{ t('app.name') }}</a>
+    <a href="/" class="nav__brand">{{ site_title }}</a>
     <div class="nav__links" id="nav-links">
       <a href="/" class="nav__link {% if active_page == 'home' %}nav__link--active{% endif %}">{{ t('nav.moments') }}</a>
       <a href="/tree" class="nav__link {% if active_page == 'tree' %}nav__link--active{% endif %}">{{ t('nav.tree') }}</a>
@@ -49,6 +53,9 @@
       {% endif %}
       <a href="/settings" class="nav__link {% if active_page == 'settings' %}nav__link--active{% endif %}">{{ t('nav.settings') }}</a>
       <a href="#" class="nav__link" onclick="logout(); return false;">{{ t('nav.logout') }}</a>
+    </div>
+    <div class="nav__controls">
+      {% include 'partials/language_switcher.html' %}
     </div>
     <button class="nav__hamburger" onclick="toggleNav()" aria-label="Menu">&#9776;</button>
   </nav>

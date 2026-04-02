@@ -6,7 +6,7 @@ All data fetching happens server-side. Templates use HTMX for dynamic interactio
 
 import os
 
-from fastapi import APIRouter, Depends, Query, Request, Response
+from fastapi import APIRouter, Depends, Form, Query, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
@@ -14,13 +14,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import get_current_user, require_admin, require_auth
 from app.database import get_db
-from app.i18n import t as translate
+from app.i18n import SUPPORTED_LOCALES, t as translate
 from app.models.media import Media
 from app.models.moments import Moment, MomentComment
 from app.models.person import Person, AccountState, Visibility
 from app.models.relationships import ParentChild, Partnership
 from app.models.trips import Trip, TripParticipant, TripMoment
 from app.services.auth_service import get_valid_invite
+from app.services.site_settings import get_site_settings, save_site_settings
 
 router = APIRouter(tags=["pages"])
 
@@ -60,6 +61,8 @@ def _country_flag(code: str | None) -> str:
 def _ctx(request: Request, current_user: Person | None = None, **kwargs):
     """Build common template context."""
     locale = _get_locale(request)
+    site_settings = get_site_settings()
+    site_title = site_settings.title or translate("app.name", locale)
 
     def _person_name(person):
         """Locale-aware display name — uses tree.our_family for root person."""
@@ -74,10 +77,55 @@ def _ctx(request: Request, current_user: Person | None = None, **kwargs):
         "url_prefix": "",
         "locale": locale,
         "t": lambda key: translate(key, locale),
+        "supported_locales": SUPPORTED_LOCALES,
+        "site_settings": site_settings,
+        "site_title": site_title,
         "country_flag": _country_flag,
         "person_name": _person_name,
         **kwargs,
     }
+
+
+@router.post("/locale")
+async def set_locale(
+    request: Request,
+    lang: str = Form(...),
+    next: str = Form("/"),
+):
+    """Persist the chosen UI locale in a cookie, then redirect back."""
+    from app.config import get_settings
+
+    locale = lang if lang in SUPPORTED_LOCALES else "en"
+    target = next or "/"
+    if not target.startswith("/"):
+        target = "/"
+
+    response = RedirectResponse(target, status_code=303)
+    settings = get_settings()
+    is_secure = settings.BASE_URL.startswith("https")
+    response.set_cookie(
+        "locale",
+        locale,
+        max_age=60 * 60 * 24 * 365,
+        path="/",
+        secure=is_secure,
+        httponly=False,
+        samesite="lax",
+    )
+    return response
+
+
+@router.post("/site/settings", response_class=HTMLResponse)
+async def update_site_settings(
+    request: Request,
+    title: str = Form(""),
+    accent: str = Form("forest"),
+):
+    """Lightweight site-level customization for first-run/landing."""
+    updated = save_site_settings(title, accent)
+    locale = _get_locale(request)
+    ctx = _ctx(request, site_settings=updated, site_title=updated.title or translate("app.name", locale))
+    return templates.TemplateResponse("partials/site_settings_preview.html", ctx)
 
 
 async def _build_moment_card_simple(db: AsyncSession, moment: Moment, current_user_id: str) -> dict:
@@ -200,11 +248,15 @@ async def login_page(request: Request, current_user: Person | None = Depends(get
 
 @router.get("/invite/{token}", response_class=HTMLResponse)
 async def invite_page(token: str, request: Request, db: AsyncSession = Depends(get_db)):
+    return_to = request.query_params.get("return_to", "/")
+    # Validate return_to is a safe relative URL
+    if not return_to.startswith("/"):
+        return_to = "/"
     invite = await get_valid_invite(db, token)
     if not invite:
         return templates.TemplateResponse("invite.html", _ctx(
             request, error="Invalid or expired invite link.", token=token,
-            person_name="", branch="",
+            person_name="", branch="", return_to=return_to,
         ))
 
     result = await db.execute(select(Person).where(Person.id == invite.person_id))
@@ -212,12 +264,12 @@ async def invite_page(token: str, request: Request, db: AsyncSession = Depends(g
     if not person:
         return templates.TemplateResponse("invite.html", _ctx(
             request, error="Person not found.", token=token,
-            person_name="", branch="",
+            person_name="", branch="", return_to=return_to,
         ))
 
     return templates.TemplateResponse("invite.html", _ctx(
         request, token=token, person_name=person.display_name,
-        branch=person.branch, error=None,
+        branch=person.branch, error=None, return_to=return_to,
     ))
 
 

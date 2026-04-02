@@ -1,0 +1,12 @@
+{% set is_saved = request.method == 'POST' %}
+<div class="setup-status" data-state="{{ 'saved' if is_saved else 'preview' }}">
+  <span class="setup-status__pill {{ 'setup-status__pill--saved' if is_saved else 'setup-status__pill--preview' }}">
+    {{ t('landing.saved') if is_saved else 'Preview' }}
+  </span>
+  <div class="setup-status__copy">
+    <span class="setup-status__text">{{ site_settings.title or site_title }}</span>
+    {% if not is_saved %}
+      <span class="setup-status__hint">{{ t('landing.setup_hint') }}</span>
+    {% endif %}
+  </div>
+</div>

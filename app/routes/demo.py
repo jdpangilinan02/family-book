@@ -14,7 +14,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.i18n import t as translate
+from app.i18n import SUPPORTED_LOCALES, t as translate
 from app.models.media import Media
 from app.models.moments import Moment, MomentComment
 from app.models.person import Person, Visibility
@@ -25,6 +25,7 @@ from app.schemas import (
     TreeResponse,
     person_to_summary,
 )
+from app.services.site_settings import get_site_settings
 
 router = APIRouter(prefix="/demo", tags=["demo"])
 
@@ -48,6 +49,8 @@ def _country_flag(code: str | None) -> str:
 def _ctx(request: Request, **kwargs):
     """Build template context for demo mode — no current_user, demo_mode=True."""
     locale = _get_locale(request)
+    site_settings = get_site_settings()
+    site_title = site_settings.title or translate("app.name", locale)
 
     def _person_name(person):
         """Locale-aware display name — uses tree.our_family for root person."""
@@ -62,6 +65,9 @@ def _ctx(request: Request, **kwargs):
         "url_prefix": "/demo",
         "locale": locale,
         "t": lambda key: translate(key, locale),
+        "supported_locales": SUPPORTED_LOCALES,
+        "site_settings": site_settings,
+        "site_title": site_title,
         "country_flag": _country_flag,
         "person_name": _person_name,
         **kwargs,

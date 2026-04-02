@@ -1,0 +1,28 @@
+{% set accent = site_settings.accent if site_settings else 'forest' %}
+{% if accent == 'ocean' %}
+<style>
+:root {
+  --green-deep: #0b3c5d;
+  --green-mid: #155b8a;
+  --green-light: #3e8ccf;
+  --green-pale: #e0f0fb;
+  --amber: #5bc0eb;
+  --amber-light: #b3e5fc;
+  --amber-pale: #e8f6ff;
+  --brown-dark: #0f2a3a;
+}
+</style>
+{% elif accent == 'rose' %}
+<style>
+:root {
+  --green-deep: #7c1f3d;
+  --green-mid: #a23b5c;
+  --green-light: #e07a9c;
+  --green-pale: #ffe6ef;
+  --amber: #f2a65a;
+  --amber-light: #f6c59f;
+  --amber-pale: #fff3e8;
+  --brown-dark: #5a1a30;
+}
+</style>
+{% endif %}

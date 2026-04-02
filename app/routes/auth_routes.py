@@ -33,9 +33,9 @@ class MagicLinkRequest(BaseModel):
     email: str
 
 
-@router.get("/invite/{token}")
+@router.get("/api/invite/{token}")
 async def get_invite(token: str, db: AsyncSession = Depends(get_db)):
-    """Show invite claim page data."""
+    """Show invite claim page data (API only — HTML page is served by pages router)."""
     invite = await get_valid_invite(db, token)
     if not invite:
         raise HTTPException(status_code=404, detail="Invalid or expired invite")

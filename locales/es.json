@@ -165,5 +165,42 @@
     "photos_count": "fotos",
     "failed_update": "No se pudo actualizar el viaje",
     "failed_delete": "No se pudo eliminar el viaje"
+  },
+  "locale": {
+    "en": "English",
+    "es": "Español",
+    "ru": "Русский"
+  },
+  "landing": {
+    "language_label": "Idioma",
+    "self_host_label": "Archivo privado autoalojado",
+    "hero_title": "Reclama tu archivo familiar antes de que parezca otra app genérica.",
+    "hero_subtitle": "Empieza con el nombre de tu familia, el idioma preferido y un estilo que se sienta propio. Esta instalación debería pertenecer a tu familia desde la primera pantalla.",
+    "bullet_private": "Privado por defecto, con acceso por invitación en lugar de un feed público.",
+    "bullet_invites": "Elige idioma y luego invita a familiares a un espacio que ya se siente conocido.",
+    "bullet_keep": "Conserva archivos, árbol y recuerdos en tu propio servidor, no atrapados en la hoja de ruta de otra empresa.",
+    "cta_claim": "Empezar configuración",
+    "cta_demo": "Ver familia demo",
+    "cta_login": "Iniciar sesión",
+    "setup_title": "Configuración inicial",
+    "claim_path": "Haz que esta instalación sea tuya antes de invitar a nadie más.",
+    "private_label": "Sitio privado",
+    "setup_hint": "Elige el nombre familiar y el acento visual que verán primero tus parientes. El resto se puede afinar una vez dentro.",
+    "name_label": "Nombre de la familia o del archivo",
+    "name_placeholder": "p. ej. Archivo Familiar Volodin",
+    "accent_label": "Estilo visual inicial",
+    "accent_forest": "Bosque",
+    "accent_ocean": "Océano",
+    "accent_rose": "Rosa",
+    "save": "Guardar estilo inicial",
+    "saved": "Guardado",
+    "onboard_cta": "¿Ya eres quien administra este archivo? Continúa al inicio de sesión y reclama el espacio privado.",
+    "feature_private_title": "Privado desde el inicio",
+    "feature_private_desc": "La primera experiencia debe sentirse como preparar una casa, no como entrar en una red social pública.",
+    "feature_tree_title": "Contexto familiar multilingüe",
+    "feature_tree_desc": "Cambia de idioma de inmediato y mantén la interfaz cerca de la vida lingüística real de la familia.",
+    "feature_invite_title": "Invitar con intención",
+    "feature_invite_desc": "Primero reclama el archivo y ajusta el tono; luego incorpora a los familiares mediante invitaciones, no con un embudo genérico de registro.",
+    "footer_line": "Un archivo familiar privado, definido antes de que salga la primera invitación."
   }
 }

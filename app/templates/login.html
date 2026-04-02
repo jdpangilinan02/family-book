@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ t('auth.login') }} — {{ t('app.name') }}</title>
+  <title>{{ t('auth.login') }} — {{ site_title }}</title>
   <link rel="stylesheet" href="/static/css/main.css">
   <meta name="theme-color" content="#faf8f5">
-  <meta name="description" content="{{ t('app.name') }} — {{ t('app.tagline') }}">
-  <meta property="og:title" content="{{ t('app.name') }}">
-  <meta property="og:site_name" content="{{ t('app.name') }}">
+  <meta name="description" content="{{ site_title }} — {{ t('app.tagline') }}">
+  <meta property="og:title" content="{{ site_title }}">
+  <meta property="og:site_name" content="{{ site_title }}">
   <meta property="og:description" content="{{ t('app.tagline') }}">
 </head>
 <body>
   <div class="auth-page">
     <div class="auth-card">
       <div style="text-align:center; margin-bottom: 8px; font-size: 2.5rem;">🌳</div>
-      <h1 class="auth-card__title">{{ t('app.name') }}</h1>
+      <h1 class="auth-card__title">{{ site_title }}</h1>
       <p class="auth-card__subtitle">{{ t('app.tagline') }}</p>
 
       <form id="magic-link-form" onsubmit="requestMagicLink(event)">
