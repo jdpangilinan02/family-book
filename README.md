@@ -74,6 +74,9 @@ Family Book exists because **your family's history shouldn't depend on a cloud s
 
 ## Features
 
+### 🚀 One-Click Setup
+Deploy, visit your site, and click "Claim this site." A guided wizard walks you through removing demo data, adding your first family members, and sending invite links — all before your coffee gets cold.
+
 ### 🌳 Interactive Family Tree
 A D3.js-powered tree visualization with branches, partnerships, and multi-generational navigation. Click any person to see their profile, relationships, and photos.
 
@@ -85,6 +88,9 @@ Upload photos and documents. SHA-256 dedup means the same photo uploaded twice t
 
 ### 📅 Moments
 A family timeline. First steps. Weddings. Graduations. That Tuesday when grandpa told the story about the war. Each moment has comments and emoji reactions. Sort by date, filter by person, search by keyword.
+
+### 🏖️ Trip Albums
+Shared photo albums for family vacations. Day-by-day timeline, GPS map with color-coded contributor pins, invite links for family members to contribute, and ZIP export of all originals.
 
 ### 🔐 Privacy by Design
 No access control lists. No admin panels for permissions. **The family tree structure IS the permission system.** Graph distance determines what you can see. Close family sees everything. Distant relatives see less. It's how privacy works in real families.
@@ -116,7 +122,7 @@ uv run python -m app.seed     # Load demo family (optional)
 uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Open [localhost:8000](http://localhost:8000). You'll see the landing page. Register, add your first family member, start building.
+Open [localhost:8000](http://localhost:8000). You'll see the landing page with a demo family to explore. Click "Claim this site" to make it yours — the setup wizard walks you through everything.
 
 ### Deploy to Railway (recommended)
 
@@ -266,6 +272,8 @@ This is an unsolved problem in the self-hosted space. Whoever solves it unlocks 
 - [x] **Phase 2A** — Media gallery, Moments timeline, Comments, Reactions
 - [x] **Phase 2B** — HTMX frontend: tree, profiles, people grid, media, moments, auth
 - [x] **Phase 3** — Docker, automated backup, i18n, PWA, security middleware
+- [x] **Phase 3B** — Onboarding: claim flow, setup wizard, demo data cleanup
+- [x] **Phase 3C** — Trip Albums: shared group photos, timeline, map, export
 - [ ] **Phase 4** — WhatsApp import via Matrix/Mautrix bridge
 - [ ] **Phase 5** — GEDCOM import/export (compatibility with Ancestry, FamilySearch)
 - [ ] **Phase 6** — Facebook/Messenger photo import
